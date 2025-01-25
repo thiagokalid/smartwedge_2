@@ -1,4 +1,4 @@
-from numpy import cos, sin, sqrt
+from numpy import cos, sin, sqrt, pi
 
 __all__ = ['AcousticLens']
 
@@ -17,6 +17,7 @@ class AcousticLens:
         self.c2 = c2
         self.tau = tau
 
+        self.max_alpha = pi/4
         self.a = (c1/c2)**2 - 1
         self.b = lambda alpha : 2*d*cos(alpha) - 2 * tau * c1**2/c2
         self.c = (c1*tau)**2 - d**2
@@ -40,9 +41,30 @@ class AcousticLens:
         """
         return -1/(2 * self.a) * (-2 * self.d * sin(alpha) + 1/2 * 1/sqrt(self.b(alpha)**2 - 4 * self.a * self.c) * (-4 * self.b(alpha) * self.d * sin(alpha)))
 
-    def pipeline2steering_angle(self, pipeline_ang):
-        x, y = self.z(pipeline_ang) * cos(pipeline_ang), self.z(pipeline_ang) * sin(pipeline_ang)
+    def xy_from_alpha(self, alpha):
+        """Computes the (x,y) coordinates of the lens for a given pipeline angle"""
+        z = self.z(alpha)
+        y = z * cos(alpha)
+        x = z * sin(alpha)
+        return x, y
+
+    def dydx_from_alpha(self, alpha):
+        """Computes the slope (dy/dx) of the lens for a given alpha"""
+        alpha_ = pi / 2 - alpha
+        z = self.z(alpha)
+        dydx = (-self.dzda(alpha) * sin(alpha_) + z * cos(alpha_)) / (-self.dzda(alpha) * cos(alpha_) - z * sin(alpha_))
+        return dydx
+
+    def pipeline2steering_angle(self, alpha):
+        # alpha : pipeline angle
+        # beta: steering angle
+        x, y = self.z(alpha) * cos(alpha), self.z(alpha) * sin(alpha)
         r = sqrt(x**2 + (self.d - y)**2)
-        steering_ang = self.z(pipeline_ang) * pipeline_ang / r
-        return steering_ang
+        beta = self.z(alpha) * alpha / r
+        return beta
+
+
+
+
+
 

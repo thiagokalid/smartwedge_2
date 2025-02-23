@@ -16,7 +16,9 @@ class RayTracer:
         self.acoustic_lens = acoustic_lens
 
     def solve(self, xf, zf, maxiter: int=6):
-        # Coordinates of foci.
+        if isinstance(xf, (int, float)) and isinstance(zf, (int, float)):
+            xf, zf = np.array([xf]), np.array([zf])
+
         Nfocus = len(xf)
         Nel = self.transducer.n_elem
 
@@ -39,7 +41,7 @@ class RayTracer:
             i_m = N_elem // 2 - i - 1
             i_p = N_elem // 2 + i
 
-            alpha_init = np.arctan(results[i_p - 1]['xcurve'] / results[i_p - 1]['ycurve'])
+            alpha_init = np.arctan(results[i_p - 1]['xlens'] / results[i_p - 1]['zlens'])
 
             # Compute the optimal path for a given transducer (xc,yc) focus (xf, yf) pair:
             results[i_p] = self.__newton(xc[i_p], yc[i_p], xf, yf, alpha_init=alpha_init, iter=iter)
@@ -49,7 +51,7 @@ class RayTracer:
             if np.count_nonzero(bad_indices) > 0:
                 print('Bad indices found at ' + str(i_p) + ': ' + str(np.count_nonzero(bad_indices)))
 
-            alpha_init = np.arctan(results[i_m + 1]['xcurve'] / results[i_m + 1]['ycurve'])
+            alpha_init = np.arctan(results[i_m + 1]['xlens'] / results[i_m + 1]['zlens'])
             results[i_m] = self.__newton(xc[i_m], yc[i_m], xf, yf, alpha_init=alpha_init, iter=iter)
             bad_indices = results[i_m]['dist'] > 1e-8
             if np.count_nonzero(bad_indices) > 0:

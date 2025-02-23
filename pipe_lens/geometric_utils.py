@@ -1,10 +1,10 @@
 from numpy import sin, cos, pi, arange, sqrt
 
 class Pipeline:
-    def __init__(self, outer_radius: float, wall_width: float, c: float):
+    def __init__(self, outer_radius: float, wall_thickness: float, c: float):
         self.outer_radius = outer_radius
-        self.inner_radius = outer_radius - wall_width
-        self.wall_width = wall_width
+        self.inner_radius = outer_radius - wall_thickness
+        self.wall_width = wall_thickness
         self.c = c
 
         self.xint, self.zint = circle_cartesian(self.inner_radius)

@@ -7,85 +7,93 @@ from framework.post_proc import envelope
 from pipe_lens.imaging_utils import fwhm, convert_time2radius
 from tqdm import tqdm
 
+#%% Chooses which acoustic lens geoemtry to use:
+root = '../data/resolution/'
+acoustic_lens_types = ["xl", "compact"]
+acoustic_lens_type = acoustic_lens_types[1]
+plot_fig = True # Chooses to either plot or save the output.
+
 #%%
 
-root = '../data/fwhm/'
-data = file_m2k.read(root + "xl_step2_degree.m2k", type_insp='contact', water_path=0, freq_transd=5,
+if acoustic_lens_type == "xl":
+    n_shots = 25
+elif acoustic_lens_type == "compact":
+    n_shots = 40
+else:
+    raise ValueError("Invalid acoustic lens type")
+
+
+data = file_m2k.read(root + f"active_dir_{acoustic_lens_type}_2degree.m2k", type_insp='contact', water_path=0, freq_transd=5,
                                   bw_transd=0.5, tp_transd='gaussian')
-# data_ref = file_m2k.read(root + "ref.m2k", type_insp='contact', water_path=0, freq_transd=5,
-#                              bw_transd=0.5, tp_transd='gaussian')
+data_ref = file_m2k.read(root + f"{acoustic_lens_type}_ref.m2k", type_insp='contact', water_path=0, freq_transd=5,
+                             bw_transd=0.5, tp_transd='gaussian')
 
 #%%
 
 log_cte = 1e-6
 time_grid = data.time_grid[:, 0]
 ang_span = np.linspace(-45, 45, 181)
-vmax = 0
-vmin = -120
-sweep_angs = np.arange(-6, 44, 2)
+vmax, vmin = 0, -120
+sweep_angs = np.linspace(-6, 44, n_shots)
 
-# S_scan para conferir o crop
-s_scan = envelope(np.sum(data.ascan_data[..., 0], axis=2), axis=0)
-sscan_db = 20 * np.log10(s_scan / s_scan.max() + log_cte)
+# It was manually identified where the outer and inner surface was (in microseconds):
+if acoustic_lens_type == "xl":
+    t_outer, t_inner = 55.27, 60.75
+    rtop, rbottom = 62.0, 58.0
+else:
+    t_outer, t_inner = 53.45, 59.30
+    rtop, rbottom = 62.0, 58.0
 
-plt.figure()
-plt.imshow(sscan_db, aspect='auto', cmap='magma', vmin=vmin, vmax=vmax,
-           extent=[ang_span[0], ang_span[-1], time_grid[-1], time_grid[0]])
-plt.show()
+r_span = convert_time2radius(time_grid, t_outer, t_inner, 5.9, 1.483, 1.483)
 
-# Define o r_span para API em mm²
-r_span = convert_time2radius(time_grid, 55.27, 60.75, 5.9, 1.483, 1.483)
-r1 = 50
-r2 = 70
-
+# Define
 m = 0
-
-
-
-first_time = True
-
-n_shots = 25
-
-#
-plot_step = 6
-mmax = int(np.ceil(n_shots / plot_step))
+mmax = 4
+plot_position = np.linspace(0, 36, mmax)
 
 
 # Seta os vetores dos dos dados
 widths, heights, maximums, = np.zeros(n_shots), np.zeros(n_shots), np.zeros(n_shots)
 
-plt.figure()
+plt.figure(figsize=(15.5,9))
 for i in tqdm(range(n_shots)):
     channels = data.ascan_data[:, :, :, i]
-    sscan = np.sum(channels, axis=2)
+    channels_ref = np.mean(data_ref.ascan_data, axis=3)
+    sscan = np.sum(channels - channels_ref, axis=2)
     sscan_db = 20 * np.log10(envelope(sscan / sscan.max(), axis=0) + log_cte)
 
     # Aplica API para descobrir a área acima de -6 dB
-    corners = [(62, -6.5 + 2 * i), (58.0, 6.5 + 2 * i)]
+
+    if n_shots == 40:
+        current_angle = 1 * i
+        corners = [(rtop, -8.5 + current_angle), (rbottom, 8.5 + current_angle)]
+    else:
+        current_angle = 2 * i
+        corners = [(rtop, -8.5 + current_angle), (rbottom, 8.5 + current_angle)]
+
     widths[i], heights[i], maximums[i], pixels_above_threshold, = fwhm(sscan, r_span, ang_span, corners)
 
-    if i % plot_step == 0:
+    if current_angle in plot_position:
         m += 1
         plt.subplot(2, mmax, m)
-        plt.title(f"S-scan da posição {i}")
+        plt.title(rf"S-scan da posição ${current_angle}\degree$")
         plt.pcolormesh(ang_span, r_span, sscan_db, cmap='magma', vmin=vmin, vmax=vmax)
-
-        if first_time:
-            plt.ylabel(r"Tempo em $\mu s$")
-            plt.xlabel(r"Ângulo de varredura da tubulação")
+        plt.ylabel(r"Tempo em $\mu s$")
+        plt.xlabel(r"Ângulo de varredura da tubulação")
 
         plt.subplot(2, mmax, m + mmax)
         plt.pcolormesh(ang_span, r_span, pixels_above_threshold, vmin=0, vmax=1)
+        plt.ylabel(r"Tempo em $\mu s$")
+        plt.xlabel(r"Ângulo de varredura da tubulação")
 
-
-        if first_time:
-            plt.ylabel(r"Tempo em $\mu s$")
-            plt.xlabel(r"Ângulo de varredura da tubulação")
-        first_time = False
+if acoustic_lens_type == "xl":
+    plt.suptitle("Acoustic lens: XL")
+else:
+    plt.suptitle("Acoustic lens: compact")
+plt.tight_layout()
 plt.show()
 
-#%%
-
+#%% Plotting the results:
 
 plt.figure(figsize=(12, 4))
 plt.subplot(1, 2, 1)
@@ -98,10 +106,8 @@ plt.xlabel(r"Tube sector angle ($\alpha$) in [degrees]")
 plt.grid()
 plt.xticks(np.arange(0, 45, 4))
 plt.tight_layout()
-# plt.ylim([0.015, 0.293])
-plt.suptitle(root)
+plt.ylim([0.0, 9.75])
 plt.legend()
-plt.show()
 
 plt.subplot(1, 2, 2)
 plt.title("Maximum Pixel Value in linear scale")
@@ -111,5 +117,16 @@ plt.ylabel("Pixel intensity")
 plt.xlabel(r"Tube sector angle ($\alpha$) in [degrees]")
 plt.grid()
 plt.xticks(np.arange(-6, 45, 4))
-plt.tight_layout()
 plt.ylim([5e3, 2.138e5])
+
+if acoustic_lens_type == "xl":
+    plt.suptitle("Acoustic lens: XL")
+else:
+    plt.suptitle("Acoustic lens: compact")
+
+plt.tight_layout()
+
+if plot_fig:
+    plt.show()
+else:
+    plt.savefig(f"../figures/active_dir_resolution_{acoustic_lens_type}.pdf")

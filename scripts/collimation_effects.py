@@ -48,9 +48,9 @@ relative_amplitudes = [envelope / maximum_amplitude * 100 for envelope in envelo
 #%% Plots the results:
 
 fig, ax = plt.subplots(figsize=(7.3 , 4.3))
-plt.plot(time_span, relative_amplitudes[2], linestyle="-", color='r', label="5 mm wide.", linewidth=2)
-plt.plot(time_span, relative_amplitudes[1], linestyle="--", color='k', label="20 mm wide.", linewidth=1)
-plt.plot(time_span, relative_amplitudes[0], linestyle="-", color='b', label="No collimation.", linewidth=1)
+plt.plot(time_span, relative_amplitudes[1], linestyle="-", color='b', label="20 mm wide.", linewidth=2)
+plt.plot(time_span, relative_amplitudes[2], linestyle="-", color='r', label="5 mm wide.", linewidth=3)
+plt.plot(time_span, relative_amplitudes[0], linestyle="--", color='k', label="No collimation.", linewidth=1)
 
 plt.xlim([52.5, 62.5])
 plt.xlabel(r"Time / [$\mu$s]")

@@ -1,13 +1,21 @@
 import numpy as np
 import matplotlib
-matplotlib.use('TkAgg')
-font = {'family' : 'monospace',
-        'weight' : 'normal',
-        'size'   : 11}
+from matplotlib import pyplot as plt
+from matplotlib.ticker import FuncFormatter, MultipleLocator, AutoMinorLocator
 
+matplotlib.use('TkAgg')
+font = {
+    'weight' : 'normal',
+    'size'   : 11
+}
+
+
+# Set the default font to DejaVu Serif
+plt.rcParams["font.family"] = "serif"
+plt.rcParams["font.serif"] = ["DejaVu Serif"]
 matplotlib.rc('font', **font)
 
-from matplotlib import pyplot as plt
+
 from framework import file_m2k
 from framework.post_proc import envelope
 
@@ -26,36 +34,41 @@ angle_span = np.arange(-alpha_max, alpha_max + delta_alpha, delta_alpha)
 # Minor adjusment for enhanced plotting:
 roll_idx = [20, 0, 0]
 
+# Estimation of hardware maximum amplitude:
+hardware_ceiling = 14700
+maximum_amplitude = hardware_ceiling * data[0].probe_params.num_elem
+
 # Extract relevant data from ultrasound file:
 time_span = data[0].time_grid
 sscans = [np.sum(data.ascan_data[..., 0], axis=2) for data in data] # sum all channels to obtain S-Scan
 ascans = [np.roll(sscan[:, 92], shift=roll, axis=0) for sscan, roll in zip(sscans, roll_idx)] # extract the a-scan allign with alpha = 0 degrees.
-ascans_db = [20 * np.log10(envelope(ascan, axis=0) + 1e-6) for ascan in ascans]
+envelopes = [envelope(ascan, axis=0) for ascan in ascans]
+relative_amplitudes = [envelope / maximum_amplitude * 100 for envelope in envelopes]
 
 #%% Plots the results:
 
-fig, ax = plt.subplots(figsize=(6.5 , 4))
-plt.plot(time_span, ascans_db[0], linestyle=":", color='k', label="No collimation.", linewidth=2)
-plt.plot(time_span, ascans_db[1], linestyle="--", color='b', label="20 mm wide.", linewidth=2)
-plt.plot(time_span, ascans_db[2], linestyle="-", color='r', label="5 mm wide "
-                                                                  ".", linewidth=2)
-plt.xlim([52.5, 62.5])
-plt.xlabel(r"Time in $\mu$s")
-plt.ylabel("Amplitude in dB")
-plt.grid(alpha=.5)
-ax.annotate('Scatterer', xy=(59.8, 100), xytext=(57.7, 112.4),
-            arrowprops=dict(facecolor='black', shrink=0.05))
-ax.annotate('Inner wall', xy=(60.8, 84.1), xytext=(59.0, 53.5),
-            arrowprops=dict(facecolor='black', shrink=0.05))
-ax.annotate('Outer wall', xy=(54.3, 84.1), xytext=(52.4, 53.5),
-            arrowprops=dict(facecolor='black', shrink=0.05))
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.43), ncol=2, fancybox=True, shadow=True)
-plt.xticks(np.arange(52, 64, 2))
-plt.tight_layout()
-fig.subplots_adjust(bottom=0.3)  # Increase right margin
+fig, ax = plt.subplots(figsize=(7.3 , 4.3))
+plt.plot(time_span, relative_amplitudes[2], linestyle="-", color='r', label="5 mm wide.", linewidth=2)
+plt.plot(time_span, relative_amplitudes[1], linestyle="--", color='k', label="20 mm wide.", linewidth=1)
+plt.plot(time_span, relative_amplitudes[0], linestyle="-", color='b', label="No collimation.", linewidth=1)
 
-plot_fig = True
-if plot_fig:
-    plt.show()
-else:
-    plt.savefig("../figures/collimation_effects.pdf")
+plt.xlim([52.5, 62.5])
+plt.xlabel(r"Time / [$\mu$s]")
+plt.ylabel("Relative Amplitude")
+plt.grid(axis='x', alpha=.25)
+plt.grid(axis='y', alpha=.75)
+ax.annotate('Scatterer', xy=(59.6, 1.2e5), xytext=(58, 2.5e5),
+            arrowprops=dict(facecolor='black', shrink=0.05))
+ax.annotate('Back wall', xy=(60.28, 3.93e5), xytext=(58.4, 5e5),
+            arrowprops=dict(facecolor='black', shrink=0.05))
+ax.annotate('Front wall', xy=(54.86, 3.93e5), xytext=(55.86, 3.93e5),
+            arrowprops=dict(facecolor='black', shrink=0.05))
+# ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.43), ncol=2, fancybox=True, shadow=True)
+ax.legend(loc='upper center', ncol=2, fancybox=True, shadow=True)
+plt.xticks(np.arange(52, 64, 2))
+plt.yticks(np.arange(0, 110, 10))
+ax.yaxis.set_major_formatter(FuncFormatter(lambda x, pos: fr"{x:.0f} %"))
+plt.tight_layout()
+
+plt.savefig("../figures/collimation_effects.pdf")
+plt.show()

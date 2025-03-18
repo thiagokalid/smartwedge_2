@@ -22,7 +22,7 @@ class AcousticLens:
         self.b = lambda alpha : 2*d*cos(alpha) - 2 * tau * c1**2/c2
         self.c = (c1*tau)**2 - d**2
 
-    def z(self, alpha):
+    def h(self, alpha):
         """
         This function computes the acoustic lens in polar coordinate.
 
@@ -32,7 +32,7 @@ class AcousticLens:
 
         return (-self.b(alpha) - sqrt(self.b(alpha)**2 - 4 * self.a * self.c)) / (2 * self.a)
 
-    def dzda(self, alpha):
+    def dhda(self, alpha):
         """
         This function computes the acoustic lens derivative in polar coordinates.
 
@@ -43,7 +43,7 @@ class AcousticLens:
 
     def xy_from_alpha(self, alpha):
         """Computes the (x,y) coordinates of the lens for a given pipeline angle"""
-        z = self.z(alpha)
+        z = self.h(alpha)
         y = z * cos(alpha)
         x = z * sin(alpha)
         return x, y
@@ -51,16 +51,16 @@ class AcousticLens:
     def dydx_from_alpha(self, alpha):
         """Computes the slope (dy/dx) of the lens for a given alpha"""
         alpha_ = pi / 2 - alpha
-        z = self.z(alpha)
-        dydx = (-self.dzda(alpha) * sin(alpha_) + z * cos(alpha_)) / (-self.dzda(alpha) * cos(alpha_) - z * sin(alpha_))
+        z = self.h(alpha)
+        dydx = (-self.dhda(alpha) * sin(alpha_) + z * cos(alpha_)) / (-self.dhda(alpha) * cos(alpha_) - z * sin(alpha_))
         return dydx
 
     def pipeline2steering_angle(self, alpha):
         # alpha : pipeline angle
         # beta: steering angle
-        x, y = self.z(alpha) * cos(alpha), self.z(alpha) * sin(alpha)
+        x, y = self.h(alpha) * cos(alpha), self.h(alpha) * sin(alpha)
         r = sqrt(x**2 + (self.d - y)**2)
-        beta = self.z(alpha) * alpha / r
+        beta = self.h(alpha) * alpha / r
         return beta
 
 

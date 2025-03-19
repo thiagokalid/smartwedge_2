@@ -12,7 +12,7 @@ import matplotlib
 matplotlib.use('TkAgg')
 font = {
     'weight' : 'normal',
-    'size'   : 12
+    'size'   : 9
 }
 
 
@@ -50,7 +50,8 @@ tof_front_wall = tof_lens + (acoustic_lens.h(angs) - pipeline.outer_radius) / ac
 tof_back_wall = tof_front_wall + pipeline.wall_width / pipeline.c
 
 #
-fig, ax = plt.subplots(figsize=(3.5, 4))
+linewidth = 6.3091141732
+fig, ax = plt.subplots(figsize=(linewidth * .45, 3))
 
 # ROI
 plt.plot(np.rad2deg(angs), 2 * tof_front_wall, "r", linewidth=2)
@@ -69,7 +70,7 @@ for k in range(1, 4):
     plt.plot(np.rad2deg(angs_restricted), 2 * k * tof_lens_restricted, "k", linewidth=3)
 
 
-plt.ylim([85e-6, 0e-6])
+plt.ylim([85e-6, 10e-6])
 plt.xticks(np.arange(-40, 40 + 20, 20))
 ax.xaxis.set_minor_locator(MultipleLocator(10))
 plt.xlim([-45, 45])
@@ -77,25 +78,25 @@ plt.xlabel(r"$\alpha$-axis / [degree]")
 plt.ylabel(r"Time / [$\mu$s]")
 plt.grid(which="major", alpha=.5)
 plt.grid(axis='x', which="minor", alpha=.2)
-ax.xaxis.set_major_formatter(FuncFormatter(lambda x, pos: f"{x:.1f}"))
+ax.xaxis.set_major_formatter(FuncFormatter(lambda x, pos: f"{x:.0f}"))
 ax.yaxis.set_major_formatter(FuncFormatter(lambda x, pos: f"{x * 1e6:.0f}"))
 
 # Annotations:
-ax.annotate(r'$\tau(\alpha,1)$',
+ax.annotate(r'$\tau_{lens}(\alpha,1)$',
             xy=(5.9, 25e-6),
             xytext=(17, 19e-6),
             arrowprops=dict(arrowstyle="-|>", color='black', alpha=1, linewidth=2),
             ha="center",  # Center text horizontally
             va="bottom"  # Position text below arrow
             )
-ax.annotate(r'$\tau(\alpha,2)$',
+ax.annotate(r'$\tau_{lens}(\alpha,2)$',
             xy=(5.9, 50e-6),
             xytext=(17, 44e-6),
             arrowprops=dict(arrowstyle="-|>", color='black', alpha=1, linewidth=2),
             ha="center",  # Center text horizontally
             va="bottom"  # Position text below arrow
             )
-ax.annotate(r'$\tau(\alpha,3)$',
+ax.annotate(r'$\tau_{lens}(\alpha,3)$',
             xy=(5.9, 76e-6),
             xytext=(17, 70e-6),
             arrowprops=dict(arrowstyle="-|>", color='black', alpha=1, linewidth=2),

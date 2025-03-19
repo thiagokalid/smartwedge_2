@@ -6,9 +6,9 @@ from matplotlib.ticker import FuncFormatter, MultipleLocator, AutoMinorLocator
 matplotlib.use('TkAgg')
 font = {
     'weight' : 'normal',
-    'size'   : 11
+    'size'   : 9
 }
-
+linewidth = 6.3091141732 # LaTeX linewidth
 
 # Set the default font to DejaVu Serif
 plt.rcParams["font.family"] = "serif"
@@ -35,7 +35,7 @@ angle_span = np.arange(-alpha_max, alpha_max + delta_alpha, delta_alpha)
 roll_idx = [20, 0, 0]
 
 # Estimation of hardware maximum amplitude:
-hardware_ceiling = 14700
+hardware_ceiling = 2**16 # its a 16bit channel
 maximum_amplitude = hardware_ceiling * data[0].probe_params.num_elem
 
 # Extract relevant data from ultrasound file:
@@ -47,27 +47,26 @@ relative_amplitudes = [envelope / maximum_amplitude * 100 for envelope in envelo
 
 #%% Plots the results:
 
-fig, ax = plt.subplots(figsize=(7.3 , 4.3))
-plt.plot(time_span, relative_amplitudes[1], linestyle="-", color='b', label="20 mm wide.", linewidth=2)
-plt.plot(time_span, relative_amplitudes[2], linestyle="-", color='r', label="5 mm wide.", linewidth=3)
-plt.plot(time_span, relative_amplitudes[0], linestyle="--", color='k', label="No collimation.", linewidth=1)
+fig, ax = plt.subplots(figsize=(linewidth * .65 , 2.5))
+plt.plot(time_span, relative_amplitudes[1], linestyle="-", color='b', label="20 mm", linewidth=1)
+plt.plot(time_span, relative_amplitudes[2], linestyle="-", color='r', label="5 mm", linewidth=2)
+plt.plot(time_span, relative_amplitudes[0], linestyle="--", color='k', label="No collimation", linewidth=.5)
 
 plt.xlim([52.5, 62.5])
 plt.xlabel(r"Time / [$\mu$s]")
-plt.ylabel("Relative Amplitude")
+plt.ylabel("Relative Amplitude / [%]")
 plt.grid(axis='x', alpha=.25)
 plt.grid(axis='y', alpha=.75)
-ax.annotate('Scatterer', xy=(59.6, 1.2e5), xytext=(58, 2.5e5),
-            arrowprops=dict(facecolor='black', shrink=0.05))
-ax.annotate('Back wall', xy=(60.28, 3.93e5), xytext=(58.4, 5e5),
-            arrowprops=dict(facecolor='black', shrink=0.05))
-ax.annotate('Front wall', xy=(54.86, 3.93e5), xytext=(55.86, 3.93e5),
-            arrowprops=dict(facecolor='black', shrink=0.05))
-# ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.43), ncol=2, fancybox=True, shadow=True)
-ax.legend(loc='upper center', ncol=2, fancybox=True, shadow=True)
+ax.annotate('Scatterer', xy=(59.6, 3.5), xytext=(58.1, 7.4),
+            arrowprops=dict(arrowstyle="-|>", color='black', alpha=1, linewidth=2))
+ax.annotate('Back wall', xy=(60.2, 11.6), xytext=(58.1, 15),
+            arrowprops=dict(arrowstyle="-|>", color='black', alpha=1, linewidth=2))
+ax.annotate('Front wall', xy=(54.86, 10), xytext=(55.59, 11.5),
+            arrowprops=dict(arrowstyle="-|>", color='black', alpha=1, linewidth=2))
+ax.legend(loc='upper center', ncol=3, fancybox=False, shadow=False, columnspacing=1, framealpha=.5)
 plt.xticks(np.arange(52, 64, 2))
-plt.yticks(np.arange(0, 110, 10))
-ax.yaxis.set_major_formatter(FuncFormatter(lambda x, pos: fr"{x:.0f} %"))
+plt.yticks(np.arange(0, 27.5, 5))
+ax.yaxis.set_major_formatter(FuncFormatter(lambda x, pos: fr"{x:.0f}"))
 plt.tight_layout()
 
 plt.savefig("../figures/collimation_effects.pdf")

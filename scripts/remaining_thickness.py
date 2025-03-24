@@ -10,14 +10,15 @@ from framework import file_m2k
 from framework.post_proc import envelope
 
 # Constants
+linewidth = 6.3091141732
 log_cte = 1e-6
 c = 5900
 
 # Define a color bar
-vmin_sscan = -6
+vmin_sscan = -120
 vmax_sscan = 0
 
-path = "/home/lacerda/Desktop/2025-03-12 - BH/"
+path = "../data/2025-03-12 - BH/"
 
 data_ref = file_m2k.read(path + 'ref2.m2k', type_insp='contact', water_path=0, freq_transd=5, bw_transd=0.5,
                          tp_transd='gaussian', sel_shots=3)[1]
@@ -33,8 +34,8 @@ times_range = [[bisect(t_span, 57.62), bisect(t_span, 58.9)], [bisect(t_span, 60
                [bisect(t_span, 58.92), bisect(t_span, 60.4)]]
 
 ext_env = envelope(np.sum(data_ref.ascan_data[:, ...], axis=2), axis=0)
-ext_log = np.log10(ext_env + log_cte)
-ext_norm = np.log10(ext_env / ext_env.max() + log_cte)
+ext_log = 20 * np.log10(ext_env + log_cte)
+ext_norm = 20 * np.log10(ext_env / ext_env.max() + log_cte)
 
 for arq in os.listdir(path):
     if 'linha' in arq:
@@ -88,7 +89,7 @@ for arq in os.listdir(path):
 
         # Plot do A-scan que vamos utilizar no artigo
         if 'segunda' in arq:
-            plt.figure()
+            plt.figure(figsize=(linewidth * .5, 3))
             plt.title("A_scan não saturado")
             plt.plot(t_span, a_scan_ext_1)
             plt.plot(ext_time_1, max_value, '.r', label='Máximo da externa')
@@ -106,12 +107,13 @@ for arq in os.listdir(path):
         print(f"Espessura remanescente falha 2: {remaining_thickness_f2:.2f}mm \n")
 
         # S-scan para plot
-        img_norm = np.log10(data_env / data_env.max() + log_cte)
+        img_norm = 20 * np.log10(data_env / data_env.max() + log_cte)
 
-        plt.figure()
+
+        plt.figure(figsize=(linewidth * .5, 3))
         plt.title(arq.split('.')[0])
-        plt.imshow(img_norm, aspect='auto', cmap='magma', vmin=vmin_sscan, vmax=vmax_sscan,
-                   extent=[ang_span[0], ang_span[-1], t_span[-1], t_span[0]])
+        plt.imshow(img_norm, aspect='auto', cmap='inferno', vmin=vmin_sscan, vmax=vmax_sscan,
+                   extent=[ang_span[0], ang_span[-1], t_span[-1], t_span[0]], interpolation='None')
 
         plt.plot(ang_flaw_1, time_flaw_1, '.b', label="Máximo Falha")
         plt.plot(ang_flaw_2, time_flaw_2, '.b')

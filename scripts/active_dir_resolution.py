@@ -14,7 +14,7 @@ from matplotlib.ticker import FuncFormatter
 matplotlib.use('TkAgg')
 font = {
     'weight' : 'normal',
-    'size'   : 12
+    'size'   : 9
 }
 # Set the default font to DejaVu Serif
 plt.rcParams["font.family"] = "serif"
@@ -125,8 +125,8 @@ twin.yaxis.label.set_color("r")
 twin.tick_params(axis='y', colors='r')
 
 plt.xticks(sweep_angs)
-plt.ylabel("Height / [mm]")
-plt.xlabel(r"$\alpha$-axis / [degrees]")
+plt.ylabel("Height / (mm)")
+plt.xlabel(r"$\alpha$-axis / (degrees)")
 plt.grid(alpha=.5)
 plt.xticks(np.arange(-6, 44 + 5, 5))
 plt.xlim([-8, 47])

@@ -73,9 +73,10 @@ fig, ax = plt.subplots(figsize=(linewidth * .5, 3))
 
 log_cte = 1e-6
 channels = data.ascan_data[..., 0]
-channels_envelope = envelope(channels, axis=0)
-sscan = np.sum(channels_envelope, axis=2)
-sscan_db = 20 * np.log10(sscan + log_cte)
+sscan = np.sum(channels, axis=2)
+sscan_envelope = envelope(sscan, axis=0)
+sscan_envelope = (sscan_envelope - sscan_envelope.min()) / (sscan_envelope.max() - sscan_envelope.min())
+sscan_db = 20 * np.log10(sscan_envelope + log_cte)
 
 
 # Lens multiple reflections:
@@ -86,7 +87,7 @@ lens_xz_restricted = np.vstack([xlens, zlens]).T
 tof_lens_restricted = np.linalg.norm(lens_xz_restricted - np.array([0, acoustic_lens.d]), axis=1) / acoustic_lens.c1
 
 plt.imshow(sscan_db, extent=[np.rad2deg(angs[0]), np.rad2deg(angs[-1]), time_grid[-1] * 1e-6, time_grid[0] * 1e-6],
-           cmap='inferno', aspect='auto', interpolation='None', vmin=30, vmax=120)
+           cmap='inferno', aspect='auto', interpolation='None', vmin=-120, vmax=0)
 plt.colorbar()
 
 plt.ylim([80e-6, 40e-6])
@@ -105,39 +106,39 @@ ax.annotate(r'$\tau_{lens}(\alpha,1)$',
             xy=(5.9, 25e-6),
             xytext=(17, 19e-6),
             color="lime",
-            arrowprops=dict(arrowstyle="-|>", color='lime', alpha=1, linewidth=2),
+            arrowprops=dict(arrowstyle="-|>", color='lime', alpha=1, linewidth=1),
             ha="center",  # Center text horizontally
             va="bottom"  # Position text below arrow
             )
-ax.annotate(r'$\tau_{lens}(\alpha,2)$',
-            xy=(5.9, 50e-6),
+ax.annotate(r'$\mathbf{\tau_{lens}(\alpha,2)}$',
+            xy=(5.9, 49e-6),
             xytext=(17, 44e-6),
     color="lime",
             arrowprops=dict(arrowstyle="-|>", color='lime', alpha=1, linewidth=2),
             ha="center",  # Center text horizontally
             va="bottom"  # Position text below arrow
             )
-ax.annotate(r'$\tau_{lens}(\alpha,3)$',
-            xy=(5.9, 76e-6),
-            xytext=(17, 70e-6),
+ax.annotate(r'$\mathbf{\tau_{lens}(\alpha,3)}$',
+            xy=(5.9, 74e-6),
+            xytext=(17, 69e-6),
             color="lime",
             arrowprops=dict(arrowstyle="-|>", color='lime', alpha=1, linewidth=2),
             ha="center",  # Center text horizontally
             va="bottom"  # Position text below arrow
             )
 
-ax.annotate(r'$\tau_{front}$',
+ax.annotate(r'$\mathbf{\tau_{front}}$',
             xy=(-40, 55e-6),
-            xytext=(-40 + 11, 49e-6),
+            xytext=(-40 + 11, 50e-6),
             color="lime",
             arrowprops=dict(arrowstyle="-|>", color='lime', alpha=1, linewidth=2),
             ha="center",  # Center text horizontally
             va="bottom"  # Position text below arrow
             )
 
-ax.annotate(r'$\tau_{back}$',
+ax.annotate(r'$\mathbf{\tau_{back}}$',
             xy=(-40, 62e-6),
-            xytext=(-40 + 11, 73e-6),
+            xytext=(-40 + 11, 70e-6),
             color='lime',
             arrowprops=dict(arrowstyle="-|>", color='lime', alpha=1, linewidth=2),
             ha="center",  # Center text horizontally

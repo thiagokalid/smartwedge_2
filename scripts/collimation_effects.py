@@ -53,16 +53,16 @@ plt.plot(time_span, relative_amplitudes[2], linestyle="-", color='r', label="5 m
 plt.plot(time_span, relative_amplitudes[0], linestyle="--", color='k', label="No collimation", linewidth=.5)
 
 plt.xlim([52.5, 62.5])
-plt.xlabel(r"Time / [$\mu$s]")
-plt.ylabel("Relative Amplitude / [%]")
+plt.xlabel(r"Time / ($\mu$s)")
+plt.ylabel("Amplitude / (%)")
 plt.grid(axis='x', alpha=.25)
 plt.grid(axis='y', alpha=.75)
 ax.annotate('Scatterer', xy=(59.6, 3.5), xytext=(58.1, 7.4),
-            arrowprops=dict(arrowstyle="-|>", color='black', alpha=1, linewidth=2))
+            arrowprops=dict(arrowstyle="-|>", color='black', alpha=1, linewidth=1))
 ax.annotate('Back wall', xy=(60.2, 11.6), xytext=(58.1, 15),
-            arrowprops=dict(arrowstyle="-|>", color='black', alpha=1, linewidth=2))
+            arrowprops=dict(arrowstyle="-|>", color='black', alpha=1, linewidth=1))
 ax.annotate('Front wall', xy=(54.86, 10), xytext=(55.59, 11.5),
-            arrowprops=dict(arrowstyle="-|>", color='black', alpha=1, linewidth=2))
+            arrowprops=dict(arrowstyle="-|>", color='black', alpha=1, linewidth=1))
 ax.legend(loc='upper center', ncol=3, fancybox=False, shadow=False, columnspacing=1, framealpha=.5)
 plt.xticks(np.arange(52, 64, 2))
 plt.yticks(np.arange(0, 27.5, 5))

@@ -18,7 +18,7 @@ c = 5900
 vmin_sscan = -120
 vmax_sscan = 0
 
-path = "../data/2025-03-12 - BH/"
+path = "../data/remaining_thickness/"
 
 data_ref = file_m2k.read(path + 'ref2.m2k', type_insp='contact', water_path=0, freq_transd=5, bw_transd=0.5,
                          tp_transd='gaussian', sel_shots=3)[1]

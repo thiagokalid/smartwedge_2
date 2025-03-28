@@ -20,12 +20,11 @@ font = {
 }
 # Set the default font to DejaVu Serif
 plt.rcParams["font.family"] = "serif"
-plt.rcParams["font.serif"] = ["DejaVu Serif"]
+plt.rcParams["font.serif"] = ["Times New Roman"]
 matplotlib.rc('font', **font)
 
 #%% Chooses which acoustic lens geoemtry to use:
 root = '../data/echoes/'
-
 data = file_m2k.read(root + f"pit_inspection.m2k",
                      freq_transd=5, bw_transd=0.5, tp_transd='gaussian', sel_shots=0)
 
@@ -45,15 +44,15 @@ channels = data.ascan_data[..., 0]
 sscan = np.sum(channels, axis=2)
 sscan_envelope = envelope(sscan, axis=0)
 sscan_envelope = (sscan_envelope - sscan_envelope.min()) / (sscan_envelope.max() - sscan_envelope.min())
-sscan_db = 20 * np.log10(sscan_envelope + log_cte)
+sscan_db = np.log10(sscan_envelope + log_cte)
 
 
 #%%
 
-plt.figure(figsize=(linewidth*.48, 3))
-plt.imshow(sscan_db, extent=[ang_span[0], ang_span[-1], time_grid[-1], time_grid[0]], cmap='inferno', aspect='auto', interpolation='None', vmin=-120, vmax=0)
+plt.figure(figsize=(linewidth*.5, 2.5))
+plt.imshow(sscan_db, extent=[ang_span[0], ang_span[-1], time_grid[-1], time_grid[0]], cmap='YlGnBu', aspect='auto', interpolation='None', vmin=-6, vmax=0)
 ytemp = np.arange(40, 65, 1)
-plt.plot(np.ones_like(ytemp) * 7, ytemp, "-", color='C0', linewidth=1)
+plt.plot(np.ones_like(ytemp) * 7, ytemp, "--", color='black', linewidth=1)
 plt.xlabel(r"$\alpha$-axis / (degrees)")
 plt.ylabel(r"Time / $\mu$s")
 plt.ylim([63, 53])
@@ -70,7 +69,7 @@ plt.show()
 # sscan_column = sscan_envelope[tbeg:tend, 104]
 # sscan_column = (sscan_column - sscan_column.min()) / (sscan_column.max() - sscan_column.min())
 
-fig, ax = plt.subplots(figsize=(linewidth*.48, 2.5))
+fig, ax = plt.subplots(figsize=(linewidth*.5, 2.5))
 plt.plot(time_grid, sscan_envelope[:, 104] * 100, color='C0')
 plt.xlim([53, 63])
 plt.ylim([-.5, 13])

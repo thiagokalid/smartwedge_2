@@ -1,4 +1,4 @@
-from numpy import cos, sin, sqrt, pi
+from numpy import cos, sin, sqrt, pi, arcsin
 
 __all__ = ['AcousticLens']
 
@@ -58,9 +58,9 @@ class AcousticLens:
     def pipeline2steering_angle(self, alpha):
         # alpha : pipeline angle
         # beta: steering angle
-        x, y = self.h(alpha) * cos(alpha), self.h(alpha) * sin(alpha)
+        x, y = self.h(alpha) * sin(alpha), self.h(alpha) * cos(alpha)
         r = sqrt(x**2 + (self.d - y)**2)
-        beta = self.h(alpha) * alpha / r
+        beta = arcsin(self.h(alpha) * sin(alpha) / r)
         return beta
 
 

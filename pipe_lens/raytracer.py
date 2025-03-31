@@ -20,18 +20,19 @@ class RayTracer:
             xf, zf = np.array([xf]), np.array([zf])
 
         Nfocus = len(xf)
-        Nel = self.transducer.n_elem
+        Nel = self.transducer.num_elem
 
         solution = self.__newton_batch(xf, zf, maxiter)
 
         return solution
 
-    def __newton_batch(self, xf: ndarray, yf: ndarray, iter: int) -> list:
+
+    def __newton_batch(self, xf: ndarray, yf: ndarray, iter: int, verbose=False) -> list:
         '''Calls the function newton() one time for each transducer element.
       The set of angles found for a given element are used as initial guess for
       the next one. Starts from the center of the transducer.'''
 
-        N_elem = self.transducer.n_elem
+        N_elem = self.transducer.num_elem
         xc, yc = self.transducer.get_coords()
 
         results = [None] * N_elem
@@ -47,18 +48,20 @@ class RayTracer:
             results[i_p] = self.__newton(xc[i_p], yc[i_p], xf, yf, alpha_init=alpha_init, iter=iter)
             bad_indices = results[i_p]['dist'] > 1e-8
 
-            #
-            if np.count_nonzero(bad_indices) > 0:
-                print('Bad indices found at ' + str(i_p) + ': ' + str(np.count_nonzero(bad_indices)))
+            if verbose:
+                if np.count_nonzero(bad_indices) > 0:
+                    print('Bad indices found at ' + str(i_p) + ': ' + str(np.count_nonzero(bad_indices)))
 
             alpha_init = np.arctan(results[i_m + 1]['xlens'] / results[i_m + 1]['zlens'])
             results[i_m] = self.__newton(xc[i_m], yc[i_m], xf, yf, alpha_init=alpha_init, iter=iter)
             bad_indices = results[i_m]['dist'] > 1e-8
-            if np.count_nonzero(bad_indices) > 0:
-                print('Bad indices found at ' + str(i_m) + ': ' + str(np.count_nonzero(bad_indices)))
+
+            if verbose:
+                if np.count_nonzero(bad_indices) > 0:
+                    print('Bad indices found at ' + str(i_m) + ': ' + str(np.count_nonzero(bad_indices)))
         return results
 
-    def __newton(self, xc: float, yc: float, xf: ndarray, yf: ndarray, alpha_init=None, iter: int = 6) -> dict:
+    def __newton(self, xc: float, yc: float, xf: ndarray, yf: ndarray, alpha_init=None, iter: int = 10) -> dict:
         '''Uses the Newton-Raphson method to compute the direction in which
       the transducer at (xc, yc) should fire in order to hit the "pixel"
       at (xf, yf). A dictionary is returned with the following information:

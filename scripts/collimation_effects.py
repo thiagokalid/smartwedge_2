@@ -1,24 +1,21 @@
 import numpy as np
 import matplotlib
 from matplotlib import pyplot as plt
-from matplotlib.ticker import FuncFormatter, MultipleLocator, AutoMinorLocator
-
-matplotlib.use('TkAgg')
-font = {
-    'weight' : 'normal',
-    'size'   : 9
-}
-linewidth = 6.3091141732 # LaTeX linewidth
-
-# Set the default font to DejaVu Serif
-plt.rcParams["font.family"] = "serif"
-plt.rcParams["font.serif"] = ["DejaVu Serif"]
-matplotlib.rc('font', **font)
-
-
+from matplotlib.ticker import FuncFormatter
 from framework import file_m2k
 from framework.post_proc import envelope
+linewidth = 6.3091141732 # LaTeX linewidth
 
+matplotlib.use('TkAgg')
+plt.rcParams.update({
+    "text.usetex": True,
+    "font.family": "serif",
+    "font.serif": ["Times"],
+    "font.size": 10,
+    "font.weight": "normal",
+})
+
+#%%
 
 root = "../data/collimation/"
 filename = ["no_collimation", "20mm_collimation", "5mm_collimation"]
@@ -47,14 +44,14 @@ relative_amplitudes = [envelope / maximum_amplitude * 100 for envelope in envelo
 
 #%% Plots the results:
 
-fig, ax = plt.subplots(figsize=(linewidth * .65 , 2.5))
-plt.plot(time_span, relative_amplitudes[1], linestyle="-", color='b', label="20 mm", linewidth=1)
-plt.plot(time_span, relative_amplitudes[2], linestyle="-", color='r', label="5 mm", linewidth=2)
+fig, ax = plt.subplots(figsize=(linewidth * .6 , 2.5))
+plt.plot(time_span, relative_amplitudes[2], linestyle="-", color="#FF1F5B", label=r"5\,mm", linewidth=2)
+plt.plot(time_span, relative_amplitudes[1], linestyle="-", color="#00CD6C", label=r"20\,mm", linewidth=1)
 plt.plot(time_span, relative_amplitudes[0], linestyle="--", color='k', label="No collimation", linewidth=.5)
 
 plt.xlim([52.5, 62.5])
-plt.xlabel(r"Time / ($\mu$s)")
-plt.ylabel("Amplitude / (%)")
+plt.xlabel(r"Time / $(\mathbf{\mu s})$")
+plt.ylabel(r"Amplitude / (\%)", labelpad=0)
 plt.grid(axis='x', alpha=.25)
 plt.grid(axis='y', alpha=.75)
 ax.annotate('Scatterer', xy=(59.6, 3.5), xytext=(58.1, 7.4),

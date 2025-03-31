@@ -1,33 +1,21 @@
-from framework import file_m2k
 import numpy as np
-import matplotlib.pyplot as plt
-
-from numpy import pi
-
-from matplotlib.ticker import FuncFormatter, MultipleLocator, AutoMinorLocator
-from matplotlib.patches import Polygon
-from pipe_lens.acoustic_lens import AcousticLens
-from pipe_lens.geometric_utils import Pipeline, pol2cart
-
 import matplotlib
-matplotlib.use('TkAgg')
-font = {
-    'weight' : 'normal',
-    'size'   : 9
-}
-
-
-# Set the default font to DejaVu Serif
-plt.rcParams["font.family"] = "serif"
-# plt.rcParams["font.serif"] = ["DejaVu Serif"]
-plt.rcParams["font.serif"] = ["Times New Roman"]
-
-matplotlib.rc('font', **font)
-
+from matplotlib import pyplot as plt
+from matplotlib.ticker import FuncFormatter, MultipleLocator
+from framework import file_m2k
 from framework.post_proc import envelope
-from pipe_lens.imaging_utils import fwhm, convert_time2radius
-from tqdm import tqdm
+from pipe_lens.acoustic_lens import AcousticLens
+from pipe_lens.geometric_utils import Pipeline
+linewidth = 6.3091141732 # LaTeX linewidth
 
+matplotlib.use('TkAgg')
+plt.rcParams.update({
+    "text.usetex": True,
+    "font.family": "serif",
+    "font.serif": ["Times"],
+    "font.size": 10,
+    "font.weight": "normal",
+})
 #%% Chooses which acoustic lens geoemtry to use:
 root = '../data/echoes/'
 acoustic_lens_type = "xl"
@@ -39,8 +27,8 @@ data = file_m2k.read(root + f"only_tube.m2k", type_insp='contact', water_path=0,
 
 #
 time_grid = data.time_grid
-c1 = 6300 # m/s
-c2 = 1480 # m/s
+c1 = 6332.93 # m/s
+c2 = 1430.00 # m/s
 d = 170e-3 # mm
 tau = 78.97e-3/c1 + 91.03e-3/c2 # seconds
 
@@ -64,9 +52,6 @@ lens_xz = np.vstack([xlens, zlens]).T
 tof_lens = np.linalg.norm(lens_xz - np.array([0, acoustic_lens.d]), axis=1) / acoustic_lens.c1
 tof_front_wall = tof_lens + (acoustic_lens.h(angs) - pipeline.outer_radius) / acoustic_lens.c2
 tof_back_wall = tof_front_wall + pipeline.wall_width / pipeline.c
-
-#
-linewidth = 6.3091141732
 
 # ROI
 # plt.plot(np.rad2deg(angs), 2 * tof_front_wall + time_offset, "--", color='black', linewidth=2)
@@ -98,8 +83,8 @@ plt.xticks(np.arange(-40, 40 + 20, 20))
 ax.xaxis.set_minor_locator(MultipleLocator(10))
 plt.xlim([-45, 45])
 plt.xlabel(r"$\alpha$-axis / (degrees)")
-plt.ylabel(r"Time / ($\mu$s)")
-plt.grid(which="major", alpha=.5)
+plt.ylabel(r"Time / ($\mathrm{\mu s}$)")
+plt.grid(which="major", alpha=.25, color='k')
 plt.grid(axis='x', which="minor", alpha=.2)
 ax.xaxis.set_major_formatter(FuncFormatter(lambda x, pos: f"{x:.0f}"))
 ax.yaxis.set_major_formatter(FuncFormatter(lambda x, pos: f"{x * 1e6:.0f}"))
@@ -109,7 +94,7 @@ ax.annotate(r'$\tau_{lens}(\alpha,1)$',
             xy=(5.9, 25e-6),
             xytext=(17, 34e-6),
             color="black",
-            arrowprops=dict(arrowstyle="-|>", color='black', alpha=1, linewidth=1.5),
+            arrowprops=dict(arrowstyle="-|>", color='black', alpha=1, linewidth=1),
             ha="center",  # Center text horizontally
             va="bottom"  # Position text below arrow
             )
@@ -117,7 +102,7 @@ ax.annotate(r'${\tau_{lens}(\alpha,2)}$',
             xy=(5.9, 49e-6),
             xytext=(17, 44e-6),
             color="black",
-            arrowprops=dict(arrowstyle="-|>", color='black', alpha=1, linewidth=1.5),
+            arrowprops=dict(arrowstyle="-|>", color='black', alpha=1, linewidth=1),
             ha="center",  # Center text horizontally
             va="bottom",  # Position text below arrow
             weight='bold',
@@ -127,7 +112,7 @@ ax.annotate(r'${\tau_{lens}(\alpha,3)}$',
             xy=(5.9, 74e-6),
             xytext=(17, 69e-6),
             color="black",
-            arrowprops=dict(arrowstyle="-|>", color='black', alpha=1, linewidth=1.5),
+            arrowprops=dict(arrowstyle="-|>", color='black', alpha=1, linewidth=1),
             ha="center",  # Center text horizontally
             va="bottom",  # Position text below arrow
             weight='bold',
@@ -138,7 +123,7 @@ ax.annotate(r'${\tau_{front}}$',
             xy=(-20, 56e-6),
             xytext=(-40 + 11, 51e-6),
             color="black",
-            arrowprops=dict(arrowstyle="-|>", color='black', alpha=1, linewidth=1.5),
+            arrowprops=dict(arrowstyle="-|>", color='black', alpha=1, linewidth=1.0),
             ha="center",  # Center text horizontally
             va="bottom",  # Position text below arrow
             weight='bold',
@@ -149,7 +134,7 @@ ax.annotate(r'${\tau_{back}}$',
             xy=(-20, 63e-6),
             xytext=(-40 + 11, 70e-6),
             color='black',
-            arrowprops=dict(arrowstyle="-|>", color='black', alpha=1, linewidth=1.5),
+            arrowprops=dict(arrowstyle="-|>", color='black', alpha=1, linewidth=1.0),
             ha="center",  # Center text horizontally
             va="bottom",  # Position text below arrow
             weight='bold',

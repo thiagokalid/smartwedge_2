@@ -1,27 +1,19 @@
-from framework import file_m2k
 import numpy as np
-import time
-from numpy import rad2deg
-linewidth = 6.3091141732
-
-from framework.post_proc import envelope
-from pipe_lens.imaging_utils import fwhm, convert_time2radius
-from tqdm import tqdm
-import gc
-
-# Modules from matplotlib for advanced plotting:
 import matplotlib
-import matplotlib.pyplot as plt
-from matplotlib.ticker import FuncFormatter
+from matplotlib import pyplot as plt
+from pipe_lens.imaging_utils import convert_time2radius
+from framework import file_m2k
+from framework.post_proc import envelope
+linewidth = 6.3091141732 # LaTeX linewidth
+
 matplotlib.use('TkAgg')
-font = {
-    'weight' : 'normal',
-    'size'   : 9
-}
-# Set the default font to DejaVu Serif
-plt.rcParams["font.family"] = "serif"
-plt.rcParams["font.serif"] = ["Times New Roman"]
-matplotlib.rc('font', **font)
+plt.rcParams.update({
+    "text.usetex": True,
+    "font.family": "serif",
+    "font.serif": ["Times"],
+    "font.size": 10,
+    "font.weight": "normal",
+})
 
 #%% Chooses which acoustic lens geoemtry to use:
 root = '../data/echoes/'
@@ -33,7 +25,7 @@ theoretical_maximum = 2 ** 16 * data.probe_params.num_elem
 time_grid = data.time_grid[:, 0]
 ang_span = np.linspace(-45, 45, 181)
 
-# It was manually identified where the front and back wall was (in microseconds):
+# It was manually identified where  the front and back wall was (in microseconds):
 t_outer, t_inner = 55.27, 60.75
 rtop, rbottom = 62.0, 58.0
 
@@ -49,12 +41,12 @@ sscan_db = np.log10(sscan_envelope + log_cte)
 
 #%%
 
-plt.figure(figsize=(linewidth*.5, 2.5))
+plt.figure(figsize=(linewidth*.48, 2.5))
 plt.imshow(sscan_db, extent=[ang_span[0], ang_span[-1], time_grid[-1], time_grid[0]], cmap='YlGnBu', aspect='auto', interpolation='None', vmin=-6, vmax=0)
 ytemp = np.arange(40, 65, 1)
 plt.plot(np.ones_like(ytemp) * 7, ytemp, "--", color='black', linewidth=1)
 plt.xlabel(r"$\alpha$-axis / (degrees)")
-plt.ylabel(r"Time / $\mu$s")
+plt.ylabel(r"Time / $\mathrm{\mu s}$")
 plt.ylim([63, 53])
 plt.colorbar()
 
@@ -64,17 +56,13 @@ plt.show()
 
 
 #%%
-# tbeg = np.where(time_grid == 53)[0][0]
-# tend = np.where(time_grid == 63)[0][0]
-# sscan_column = sscan_envelope[tbeg:tend, 104]
-# sscan_column = (sscan_column - sscan_column.min()) / (sscan_column.max() - sscan_column.min())
 
 fig, ax = plt.subplots(figsize=(linewidth*.5, 2.5))
-plt.plot(time_grid, sscan_envelope[:, 104] * 100, color='C0')
+plt.plot(time_grid, sscan_envelope[:, 104] * 100, color='k', linewidth=1.5)
 plt.xlim([53, 63])
 plt.ylim([-.5, 13])
-plt.xlabel(r"Time / $\mu$s")
-plt.ylabel("Amplitude / (%)")
+plt.xlabel(r"Time / $\mathbf{\mu s}$")
+plt.ylabel(r"Amplitude / (\%)", labelpad=0)
 plt.grid(alpha=.5)
 
 ax.annotate("", xy=(55.7, 10), xytext=(59.3, 10),

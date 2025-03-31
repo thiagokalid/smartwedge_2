@@ -6,17 +6,18 @@ from numpy import ndarray
 __all__ = ["Transducer"]
 
 class Transducer:
-    def __init__(self, pitch: float = .4, n_elem: int = 64, fc: float = 5e6, bw: float = .4, bwr: float = -6,
+    def __init__(self, pitch: float = .4e-3, num_elem: int = 64, fc: float = 5e6, bw: float = .4, bwr: float = -6,
                  pulse_type: str = "gaussian"):
         self.pitch = pitch
-        self.n_elem = n_elem
+        self.num_elem = num_elem
         self.fc = fc
         self.bw = bw  # Hz
         self.bwr = bwr  # dB
         self.pulse_type = pulse_type
-        self.xt = np.arange(0, self.n_elem) * pitch
+        self.xt = np.arange(0, self.num_elem) * pitch
         self.xt -= np.mean(self.xt)
         self.zt = np.zeros_like(self.xt)
+        self.elements = np.arange(1, self.num_elem + 1, 1)
 
     def get_coords(self, i: int = -1):
         if i == -1:

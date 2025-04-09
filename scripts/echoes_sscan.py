@@ -78,7 +78,7 @@ plt.imshow(sscan_db, extent=[np.rad2deg(angs[0]), np.rad2deg(angs[-1]), time_gri
            cmap='YlGnBu', aspect='auto', interpolation='None', vmin=-6, vmax=0)
 plt.colorbar()
 
-plt.ylim([70e-6, 20e-6])
+plt.ylim([71e-6, 20e-6])
 plt.xticks(np.arange(-40, 40 + 20, 20))
 ax.xaxis.set_minor_locator(MultipleLocator(10))
 plt.xlim([-45, 45])
@@ -90,7 +90,7 @@ ax.xaxis.set_major_formatter(FuncFormatter(lambda x, pos: f"{x:.0f}"))
 ax.yaxis.set_major_formatter(FuncFormatter(lambda x, pos: f"{x * 1e6:.0f}"))
 
 # Annotations:
-ax.annotate(r'$\tau_{lens}(\alpha,1)$',
+ax.annotate(r'$\tau_{\mathrm{lens}}(\alpha,1)$',
             xy=(5.9, 25e-6),
             xytext=(17, 34e-6),
             color="black",
@@ -98,7 +98,7 @@ ax.annotate(r'$\tau_{lens}(\alpha,1)$',
             ha="center",  # Center text horizontally
             va="bottom"  # Position text below arrow
             )
-ax.annotate(r'${\tau_{lens}(\alpha,2)}$',
+ax.annotate(r'${\tau_{\mathrm{lens}}(\alpha,2)}$',
             xy=(5.9, 49e-6),
             xytext=(17, 44e-6),
             color="black",
@@ -108,7 +108,7 @@ ax.annotate(r'${\tau_{lens}(\alpha,2)}$',
             weight='bold',
             style='italic'
             )
-ax.annotate(r'${\tau_{lens}(\alpha,3)}$',
+ax.annotate(r'${\tau_{\mathrm{lens}}(\alpha,3)}$',
             xy=(5.9, 74e-6),
             xytext=(17, 69e-6),
             color="black",
@@ -119,7 +119,7 @@ ax.annotate(r'${\tau_{lens}(\alpha,3)}$',
             style='italic'
             )
 
-ax.annotate(r'${\tau_{front}}$',
+ax.annotate(r'${\tau_{\mathrm{outer}}}$',
             xy=(-20, 56e-6),
             xytext=(-40 + 11, 51e-6),
             color="black",
@@ -130,7 +130,7 @@ ax.annotate(r'${\tau_{front}}$',
             style='italic'
             )
 
-ax.annotate(r'${\tau_{back}}$',
+ax.annotate(r'${\tau_{\mathrm{inner}}}$',
             xy=(-20, 63e-6),
             xytext=(-40 + 11, 70e-6),
             color='black',

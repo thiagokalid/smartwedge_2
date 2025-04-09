@@ -49,7 +49,7 @@ plt.xlabel(r"$\alpha$-axis / (degrees)", labelpad=0)
 plt.colorbar()
 
 # Annotations:
-ax.annotate(r'${\tau_{lens}(\alpha,1)}$',
+ax.annotate(r'${\tau_{\mathrm{lens}}(\alpha,1)}$',
             xy=(5.9, 25),
             xytext=(25, 15),
             color="k",
@@ -57,7 +57,7 @@ ax.annotate(r'${\tau_{lens}(\alpha,1)}$',
             ha="center",  # Center text horizontally
             va="bottom"  # Position text below arrow
             )
-ax.annotate(r'${\tau_{lens}(\alpha,2)}$',
+ax.annotate(r'${\tau_{\mathrm{lens}}(\alpha,2)}$',
             xy=(5.9, 49),
             xytext=(25, 39),
     color="k",
@@ -66,7 +66,7 @@ ax.annotate(r'${\tau_{lens}(\alpha,2)}$',
             va="bottom"  # Position text below arrow
             )
 
-ax.annotate(r'${\tau_{front}}$',
+ax.annotate(r'${\tau_{\mathrm{outer}}}$',
             xy=(-40, 55),
             xytext=(-40 + 11, 45),
             color="k",
@@ -74,7 +74,7 @@ ax.annotate(r'${\tau_{front}}$',
             ha="center",  # Center text horizontally
             va="bottom"  # Position text below arrow
             )
-ax.annotate(r'${\tau_{back}}$',
+ax.annotate(r'${\tau_{\mathrm{inner}}}$',
             xy=(-40, 63),
             xytext=(-40 + 11, 78),
             color='black',
@@ -102,7 +102,7 @@ plt.xlim([20, 65])
 plt.ylim([-5, 105])
 
 
-ax.annotate(r'$\tau_{lens}(0^\circ,1)$',
+ax.annotate(r'$\tau_{\mathrm{lens}}(0^\circ,1)$',
             xy=(25.6, 75),
             xytext=(35, 85),
             color="k",
@@ -110,7 +110,7 @@ ax.annotate(r'$\tau_{lens}(0^\circ,1)$',
             ha="center",  # Center text horizontally
             va="bottom"  # Position text below arrow
             )
-ax.annotate(r'$\tau_{lens}(0^\circ,2)$',
+ax.annotate(r'$\tau_{\mathrm{lens}}(0^\circ,2)$',
             xy=(48.1, 13),
             xytext=(43, 35),
             color="k",
@@ -118,7 +118,7 @@ ax.annotate(r'$\tau_{lens}(0^\circ,2)$',
             ha="center",  # Center text horizontally
             va="bottom"  # Position text below arrow
             )
-ax.annotate(r'$\tau_{front}$',
+ax.annotate(r'$\tau_{\mathrm{outer}}$',
             xy=(56, 13),
             xytext=(53, 45),
     color="k",
@@ -126,7 +126,7 @@ ax.annotate(r'$\tau_{front}$',
             ha="center",  # Center text horizontally
             va="bottom"  # Position text below arrow
             )
-ax.annotate(r'$\tau_{back}$',
+ax.annotate(r'$\tau_{\mathrm{inner}}$',
             xy=(62.53, 7.2),
             xytext=(59.53, 39),
     color="k",

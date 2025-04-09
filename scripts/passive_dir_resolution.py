@@ -116,7 +116,7 @@ for index in tqdm(range(len(angular_location) * num_versions)):
         # Aplica API para descobrir a área acima de -6 dB
         corners = [(64, -8 + current_ang_location), (55, +8 + current_ang_location)]
 
-        widths[i], heights[i], peaks[i], pixels_above_threshold, = fwhm(sscan, r_span, ang_span, corners)
+        widths[i], heights[i], peaks[i], pixels_above_threshold, _ = fwhm(sscan, r_span, ang_span, corners)
 
         if False:
             plt.imshow(sscan_db, extent=[ang_span[0], ang_span[-1], time_grid[-1], time_grid[0]], cmap='inferno', aspect='auto', interpolation="none")
@@ -140,13 +140,13 @@ for index in tqdm(range(len(angular_location) * num_versions)):
     passive_flaw_widths[ii, vv] = passive_flaw_width
     print(f"FWHM of {current_ang_location} degree ({version}) = {passive_flaw_width:.2f}")
 
-    if angular_location == 20 and version == "v1":
+    if current_ang_location == 0 and version == "v1":
         # Plots results:
 
         fig, ax = plt.subplots(figsize=(linewidth * .49, linewidth * .4))
         plt.plot(xspan, peaks_percentage, ":o", color="k")
-        plt.xlabel("Passive direction movement / (mm)")
-        plt.ylabel("Normalized amplitude / (%)")
+        plt.xlabel("Position along passive direction / (mm)")
+        plt.ylabel(r"Normalized amplitude / (\%)")
         ax.yaxis.set_major_formatter(FuncFormatter(lambda x, pos: fr"{x:.0f}"))
         plt.ylim([-10, 110])
         plt.yticks(np.arange(0, 125, 25))
@@ -157,7 +157,7 @@ for index in tqdm(range(len(angular_location) * num_versions)):
         plt.plot(half_peak_loc_left * np.ones_like(ytemp), ytemp, 'r', alpha=.8, linewidth=2)
         plt.plot(half_peak_loc_right * np.ones_like(ytemp), ytemp, 'r', alpha=.8, linewidth=2)
 
-        ax.annotate("", xy=(half_peak_loc_left, 25), xytext=(half_peak_loc_right, 25),
+        ax.annotate("", xy=(half_peak_loc_left, 25) , xytext=(half_peak_loc_right, 25),
                     arrowprops=dict(arrowstyle="<->", color='red', alpha=.8, linewidth=2),
                     ha="center",  # Center text horizontally
                     va="bottom"  # Position text below arrow
@@ -179,7 +179,7 @@ for index in tqdm(range(len(angular_location) * num_versions)):
 #%%
 
 
-fig, ax = plt.subplots(figsize=(linewidth * .49, linewidth * .4))
+fig, ax = plt.subplots(figsize=(linewidth * .49, 2.6))
 plt.errorbar(angular_location, np.mean(passive_flaw_widths, axis=1), np.std(passive_flaw_widths, axis=1), color='red', ls='None', marker='o', capsize=5, capthick=1, ecolor='black', markersize=5, label="Acoustic lens")
 
 # Single-element result:
@@ -189,8 +189,8 @@ std_mono = np.std(fwhm_mono)
 
 plt.plot(x_mono, y_mono, "-", color="#00CD6C", linewidth=2, label="Single-element")
 ax.fill_between(x_mono, y_mono - std_mono, y_mono + std_mono, alpha=0.2, color='#00CD6C')
-plt.xlabel(r"Scatterer position / (degrees)")
-plt.ylabel("FWHM / (mm)")
+plt.xlabel(r"RBH position / (degrees)")
+plt.ylabel("FWHM along passive direction / (mm)")
 ax.yaxis.set_major_formatter(FuncFormatter(lambda x, pos: fr"{x:.1f}"))
 plt.ylim([1, 4])
 plt.yticks(np.arange(1, 4, .5))

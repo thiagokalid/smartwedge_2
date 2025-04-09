@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+from bisect import bisect
 from framework.post_proc import envelope
 
 
@@ -184,7 +184,7 @@ def api_func_polar(sscan, r_span, theta_deg_span, corners_in, thresh=-6, drawSqu
     return api, maxAbsoluteLocation, pixels_above_threshold, maximumAmplitude, estimated_width, estimated_height
 
 
-def fwhm(sscan, r_span, theta_deg_span, corners_in, thresh=-6, drawSquare=True):
+def fwhm(sscan, r_span, theta_deg_span, corners_in, thresh=-6, drawSquare=True, time_grid=None):
     # Corner in [(r1, theta1), (r2, theta2)] in (mm, deg)
 
     # Converts (mm, deg) to (index, index):
@@ -229,6 +229,7 @@ def fwhm(sscan, r_span, theta_deg_span, corners_in, thresh=-6, drawSquare=True):
 
     pixels_area = np.zeros_like(sscan)
     pixels_coords = np.zeros(shape=(*sscan.shape, 2))
+    pixels_coords_2 = np.zeros_like(pixels_coords)
     for i in range(sscan.shape[0]):
         for j in range(sscan.shape[1]):
             inner_radius = r_borders[i]
@@ -242,11 +243,40 @@ def fwhm(sscan, r_span, theta_deg_span, corners_in, thresh=-6, drawSquare=True):
 
             pixel_radius = (outer_radius + inner_radius) / 2
             pixel_ang = (theta1 + theta2) / 2
-            pixels_coords[i, j, 0] = pixel_radius * np.cos(pixel_ang * np.pi / 360)
-            pixels_coords[i, j, 1] = pixel_radius * np.sin(pixel_ang * np.pi / 360)
+
+            pixels_coords[i, j, 0] = pixel_ang
+
+            if time_grid is None:
+                pixels_coords[i, j, 1] = pixel_radius
+            else:
+                pixels_coords[i, j, 1] = float(time_grid[i])
     #
-    estimated_width = np.max(pixels_coords[pixels_above_threshold, 0]) - np.min(pixels_coords[pixels_above_threshold, 0])
-    estimated_height = np.max(pixels_coords[pixels_above_threshold, 1]) - np.min(pixels_coords[pixels_above_threshold, 1])
+
+
+
+    estimated_width = pixels_coords[pixels_above_threshold, 0].max() - pixels_coords[pixels_above_threshold, 0].min()
+    estimated_height = pixels_coords[pixels_above_threshold, 1].max() - pixels_coords[pixels_above_threshold, 1].min()
+
+    #
+    # import matplotlib
+    # matplotlib.use('TkAgg')
+    #
+    #
+    # plt.figure()
+    # plt.pcolormesh(theta_deg_span, time_grid, pixels_above_threshold)
+    # plt.show()
+
+    cnr_ang_beg, cnr_ang_end = np.argmin(np.power(theta_deg_span + 10, 2)), np.argmin(np.power(theta_deg_span + 4, 2))
+    cnr_radius_beg, cnr_radius_end = np.argmin(np.power(r_span - corners_in[0][0], 2)), np.argmin(np.power(r_span - corners_in[1][0], 2))
+
+    # plt.imshow(sscan)
+    Ib = sscan[cnr_radius_beg:cnr_radius_end, cnr_ang_beg:cnr_ang_end]
+    Is = sscan[pixels_above_threshold]
+
+    Is_mean = np.mean(Is)
+    Ib_mean = np.mean(Ib)
+    sigma_b = np.std(Ib)
+    cnr = np.abs(Is_mean - Ib_mean) / sigma_b
 
     if drawSquare:
         width = 2
@@ -263,7 +293,7 @@ def fwhm(sscan, r_span, theta_deg_span, corners_in, thresh=-6, drawSquare=True):
         pixels_above_threshold[south_west_corner[0] - width * scale_factor: south_west_corner[0] + width * scale_factor,
         north_east_corner[1] - width: south_west_corner[1] + width] = 1
 
-    return estimated_width, estimated_height, maximumAmplitude, pixels_above_threshold
+    return estimated_width, estimated_height, maximumAmplitude, pixels_above_threshold, cnr
 
 def image_in_db(img, apply_envelope=True):
     if apply_envelope:

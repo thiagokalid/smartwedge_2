@@ -38,7 +38,7 @@ plt.plot(t_, x_, '-', color='k')
 plt.xlabel('Time')
 plt.ylabel('Amplitude')
 
-ax.annotate("Front wall", xy=(.27, .325), xytext=(.355, .84),
+ax.annotate("Outer surface", xy=(.27, .325), xytext=(.385, .84),
             arrowprops=dict(arrowstyle="-|>", color='k', alpha=1, linewidth=1),
             ha="center",  # Center text horizontally
             va="bottom"  # Position text below arrow
@@ -48,7 +48,7 @@ ax.annotate("", xy=(.770, .325), xytext=(0.695, .645),
             ha="center",  # Center text horizontally
             va="bottom"  # Position text below arrow
             )
-ax.annotate("Back wall (spurious)", xy=(.770, .325), xytext=(0.78, .68),
+ax.annotate("Inner surface (spurious)", xy=(.770, .325), xytext=(0.75, .68),
             ha="center",  # Center text horizontally
             va="bottom"  # Position text below arrow
             )

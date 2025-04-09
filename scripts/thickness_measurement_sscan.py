@@ -46,8 +46,8 @@ plt.imshow(sscan_db, extent=[ang_span[0], ang_span[-1], time_grid[-1], time_grid
 ytemp = np.arange(40, 65, 1)
 plt.plot(np.ones_like(ytemp) * 7, ytemp, "--", color='black', linewidth=1)
 plt.xlabel(r"$\alpha$-axis / (degrees)")
-plt.ylabel(r"Time / $\mathrm{\mu s}$")
-plt.ylim([63, 53])
+plt.ylabel(r"Time / $(\mathrm{\mu s})$")
+plt.ylim([63.45, 54.3])
 plt.colorbar()
 
 plt.tight_layout()
@@ -59,9 +59,9 @@ plt.show()
 
 fig, ax = plt.subplots(figsize=(linewidth*.5, 2.5))
 plt.plot(time_grid, sscan_envelope[:, 104] * 100, color='k', linewidth=1.5)
-plt.xlim([53, 63])
+plt.xlim([54.3, 63.45])
 plt.ylim([-.5, 13])
-plt.xlabel(r"Time / $\mathbf{\mu s}$")
+plt.xlabel(r"Time / $(\mathbf{\mu s})$")
 plt.ylabel(r"Amplitude / (\%)", labelpad=0)
 plt.grid(alpha=.5)
 

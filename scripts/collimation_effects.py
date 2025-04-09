@@ -54,11 +54,11 @@ plt.xlabel(r"Time / $(\mathbf{\mu s})$")
 plt.ylabel(r"Amplitude / (\%)", labelpad=0)
 plt.grid(axis='x', alpha=.25)
 plt.grid(axis='y', alpha=.75)
-ax.annotate('Scatterer', xy=(59.6, 3.5), xytext=(58.1, 7.4),
+ax.annotate('Top of the flaw', xy=(59.6, 3.5), xytext=(57.5, 7.4),
             arrowprops=dict(arrowstyle="-|>", color='black', alpha=1, linewidth=1))
-ax.annotate('Back wall', xy=(60.2, 11.6), xytext=(58.1, 15),
+ax.annotate('Inner surface', xy=(60.2, 11.6), xytext=(57.8, 15),
             arrowprops=dict(arrowstyle="-|>", color='black', alpha=1, linewidth=1))
-ax.annotate('Front wall', xy=(54.86, 10), xytext=(55.59, 11.5),
+ax.annotate('Outer surface', xy=(54.86, 10), xytext=(55.59, 11.5),
             arrowprops=dict(arrowstyle="-|>", color='black', alpha=1, linewidth=1))
 ax.legend(loc='upper center', ncol=3, fancybox=False, shadow=False, columnspacing=1, framealpha=.5)
 plt.xticks(np.arange(52, 64, 2))

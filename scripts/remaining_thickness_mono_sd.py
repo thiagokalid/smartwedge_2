@@ -9,7 +9,7 @@ from bisect import bisect
 from framework import file_m2k
 from framework.post_proc import envelope
 
-path = '/media/lacerda/TOSHIBA EXT/SmartWedge/2025-03-28 - Ensaios com Mono V2/residual_thickness/'
+path = '../data/remaining_thickness/single_element/'
 c = 5893.426
 
 second_row_results_0deg = list()

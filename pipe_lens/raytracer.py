@@ -82,8 +82,8 @@ class RayTracer:
         for i in range(iter):
             dic, d1, d2 = self.__dist_and_derivatives(xc, yc, xf, yf, alphaa, eps=1e-4)
             alphaa -= d1 / d2
-            alphaa[alphaa > self.acoustic_lens.max_alpha] = self.acoustic_lens.max_alpha * .9
-            alphaa[alphaa < -self.acoustic_lens.max_alpha] = -self.acoustic_lens.max_alpha * .9
+            alphaa[alphaa > self.acoustic_lens.alpha_max] = self.acoustic_lens.alpha_max * .9
+            alphaa[alphaa < -self.acoustic_lens.alpha_max] = -self.acoustic_lens.alpha_max * .9
             maxdist.append(dic['dist'].max())
             mindist.append(dic['dist'].min())
         dic['maxdist'] = maxdist

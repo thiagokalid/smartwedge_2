@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib
+from numpy import pi
 from matplotlib import pyplot as plt
 from pipe_lens.acoustic_lens import AcousticLens
 linewidth = 6.3091141732 # LaTeX linewidth
@@ -15,16 +16,18 @@ plt.rcParams.update({
 
 
 #%%
-c1 = 6332.93 # m/s
-c2 = 1430.00 # m/s
-d = 170e-3 # mm
-tau = 78.97e-3/c1 + 91.03e-3/c2 # seconds
+c1 = 6332.93 # in (m/s)
+c2 = 1430.00 # in (m/s)
+d = 170e-3 # in (m)
+alpha_max = pi/4 # in (rad)
+alpha_0 = 0  # in (rad)
+h0 = 91.03e-3 # in (m)
 
-acoustic_lens = AcousticLens(d, c1, c2, tau)
+acoustic_lens = AcousticLens(c1, c2, d, alpha_max, alpha_0, h0)
 
-alpha = np.arange(0, np.pi/4, 1e-3)
+alpha = np.arange(0, alpha_max, 1e-3)
 h = acoustic_lens.h(alpha)
-theta = acoustic_lens.pipeline2steering_angle(alpha)
+theta = acoustic_lens.pipe2steering_angle(alpha)
 
 
 #%% Figure 1:

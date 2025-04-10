@@ -30,10 +30,9 @@ root = '../data/resolution/passive_dir/'
 angular_location = [
     0, # degree
     10, # degree
-    20, # degrees
-    30, # degrees
-    34, # degrees
-    38.5
+    20,  # degree
+    30,  # degree
+    38.5  # degree
 ]
 
 num_versions = 3
@@ -85,6 +84,7 @@ time.sleep(1)
 #%% Using acoustic lens:
 
 peaks_matrix = np.zeros(shape=(30, len(angular_location), num_versions), dtype=float)
+xspan_matrix = np.zeros(shape=(30, len(angular_location), num_versions), dtype=float)
 
 print("Processing Phased Array data:")
 for index in tqdm(range(len(angular_location) * num_versions)):
@@ -96,14 +96,15 @@ for index in tqdm(range(len(angular_location) * num_versions)):
 
     data = file_m2k.read(root + f"passive_dir_{current_ang_location}degree_{version}.m2k",
                          freq_transd=5, bw_transd=0.5, tp_transd='gaussian')
-    if angular_location in [0, 10, 20]:
+
+    if current_ang_location in [0, 10, 20]:
         data_ref = file_m2k.read(root + f"ref.m2k",
-                             freq_transd=5, bw_transd=0.5, tp_transd='gaussian')
-        channels_ref = np.mean(data_ref.ascan_data, axis=3)
+                                 freq_transd=5, bw_transd=0.5, tp_transd='gaussian')
     else:
         data_ref = file_m2k.read(root + f"ref2.m2k",
                                  freq_transd=5, bw_transd=0.5, tp_transd='gaussian')
-        channels_ref = np.mean(data_ref.ascan_data, axis=3)
+
+    channels_ref = np.mean(data_ref.ascan_data, axis=3)
 
     n_shots = data.ascan_data.shape[-1]
     log_cte = 1e-6
@@ -113,10 +114,9 @@ for index in tqdm(range(len(angular_location) * num_versions)):
     # It was manually identified where the outer and inner surface was (in microseconds):
     if current_ang_location in [0, 10, 20]:
         t_outer, t_inner = 56.13, 63.22
-        print("A")
     else:
         t_outer, t_inner = 53.8, 60.49
-        print("B")
+
     r_span = convert_time2radius(time_grid, t_outer, t_inner, 5.9, 1.483, 1.483)
 
     # Seta os vetores dos dos dados
@@ -132,9 +132,9 @@ for index in tqdm(range(len(angular_location) * num_versions)):
         # Aplica API para descobrir a área acima de -6 dB
         corners = [(64, -8 + current_ang_location), (55, +8 + current_ang_location)]
 
-        widths[i], heights[i], peaks[i], pixels_above_threshold, _ = fwhm(sscan, r_span, ang_span, corners, thresh=-6, drawSquare=False)
+        widths[i], heights[i], peaks[i], pixels_above_threshold, _ = fwhm(sscan, r_span, ang_span, corners)
         peaks_matrix[i, ii, vv] = peaks[i]
-        #
+
         if False:
             plt.figure()
             plt.suptitle(f"i = {i}")
@@ -146,6 +146,7 @@ for index in tqdm(range(len(angular_location) * num_versions)):
 
     # Finding FWHM
     xspan = np.arange(0, n_shots) - np.where(peaks == peaks.max())[0]
+    xspan_matrix[:len(xspan), ii, vv] = xspan
 
     minimum = np.min([peaks[bisect(xspan, -5) - 1], peaks[bisect(xspan, 5) - 1]])
 
@@ -159,23 +160,17 @@ for index in tqdm(range(len(angular_location) * num_versions)):
 
     cost_fun = lambda x: power(peaks_interp(x) - .5, 2)
 
-    half_peak_loc_left = scipy.optimize.minimize(cost_fun, 0, bounds=[(xspan[0], 0)]).x
-    if np.abs(half_peak_loc_left - xspan[0]) <= 1e-1:
-        print("Inside1")
-        half_peak_loc_left = scipy.optimize.minimize(cost_fun, 0, bounds=[(xspan[0] * .5, 0)]).x
-
-    half_peak_loc_right = scipy.optimize.minimize(cost_fun, 0, bounds=[(0, xspan[-1])]).x
-    if np.abs(half_peak_loc_right == xspan[-1]) <= 1e-1:
-        print("Inside2")
-        half_peak_loc_right = scipy.optimize.minimize(cost_fun, 0, bounds=[(0, xspan[-1]*.5)]).x
-
-    print(f"interval = ({half_peak_loc_left}, {half_peak_loc_right})")
+    half_peak_loc_left = scipy.optimize.minimize(cost_fun, 0, bounds=[(-3, 0)]).x
+    half_peak_loc_right = scipy.optimize.minimize(cost_fun, 0, bounds=[(0, 3)]).x
+    print(f"({float(half_peak_loc_left):.1f}, {float(half_peak_loc_right):.1f})")
 
     passive_flaw_width = half_peak_loc_right[0] - half_peak_loc_left[0]
     passive_flaw_widths[ii, vv] = passive_flaw_width
     print(f"FWHM of {current_ang_location} degree ({version}) = {passive_flaw_width:.2f}")
 
-    if current_ang_location == 0 and version == "v2":
+
+
+    if current_ang_location == 0 and version ==  "v1":
         # Plots results:
 
         fig, ax = plt.subplots(figsize=(linewidth * .49, linewidth * .4))
@@ -212,10 +207,19 @@ for index in tqdm(range(len(angular_location) * num_versions)):
     gc.collect()
 
 #%%
+# np.save("peaks_matrix.npy", peaks_matrix)
+
+#problemáticos: v1, 30 graus,
+# v3 34 graus
+
+# plt.figure()
+# plt.plot(xspan_matrix[:, 4, 0], peaks_matrix[:, 4, 0])
+# plt.show()
+
 
 
 fig, ax = plt.subplots(figsize=(linewidth * .49, 2.6))
-plt.errorbar(angular_location, np.mean(passive_flaw_widths, axis=1), np.std(passive_flaw_widths, axis=1), color='red', ls='None', marker='o', capsize=5, capthick=1, ecolor='black', markersize=5, label="Acoustic lens")
+plt.errorbar(angular_location, np.mean(passive_flaw_widths, axis=1), np.std(passive_flaw_widths, axis=1), color='r', ls='None', marker='o', capsize=5, capthick=1, ecolor='black', markersize=3, label="Acoustic lens")
 
 # Single-element result:
 x_mono = np.arange(-10, 50, 1)
@@ -229,11 +233,11 @@ plt.ylabel("FWHM along passive direction / (mm)")
 ax.yaxis.set_major_formatter(FuncFormatter(lambda x, pos: fr"{x:.1f}"))
 plt.ylim([1, 4])
 plt.yticks(np.arange(1, 4, .5))
-plt.xticks([0, 10, 20, 30, 40])
+plt.xticks(np.linspace(0, 40, 5))
 plt.xlim([-5, 45])
 plt.grid(alpha=.5)
 ytemp = np.arange(20, 60, 1)
-plt.legend()
+plt.legend(loc='lower right')
 
 
 plt.tight_layout()

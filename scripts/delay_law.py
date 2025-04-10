@@ -34,11 +34,14 @@ data = file_m2k.read(root + f"only_tube.m2k", type_insp='contact', water_path=0,
 time_grid = data.time_grid
 
 # Acoustic lens parameters:
-c1 = 6332.93 # m/s
-c2 = 1430.00 # m/s
-d = 170e-3 # mm
-tau = 78.97e-3/c1 + 91.03e-3/c2 # seconds
-acoustic_lens = AcousticLens(d, c1, c2, tau)
+c1 = 6332.93 # in (m/s)
+c2 = 1430.00 # in (m/s)q
+d = 170e-3 # in (m)
+alpha_max = pi/4 # in (rad)
+alpha_0 = 0  # in (rad)
+h0 = 91.03e-3 # in (m)
+
+acoustic_lens = AcousticLens(c1, c2, d, alpha_max, alpha_0, h0)
 
 # Pipeline-related parameters:
 radius = 70e-3
@@ -61,7 +64,7 @@ alpha_max = pi/4
 alpha_min = -pi/4
 alpha_span = np.arange(alpha_min, alpha_max + delta_alpha, delta_alpha)
 
-theta_span = acoustic_lens.pipeline2steering_angle(alpha_span)
+theta_span = acoustic_lens.pipe2steering_angle(alpha_span)
 
 delay_law_pw = np.zeros([181,64]) # Transmission law is equal to reception law.
 for i in range(181):

@@ -1,8 +1,19 @@
 # An acoustic lens for displacement-free sectorial inspection of pipes with ultrasonic phased arrays
 
-by Gustavo P. Pires, Thiago E. Kalid, Tatiana de A. Prado, Vinícius L. Costa, Gabriela R. Pereira, Thiago A. R. Passarin, Daniel R. Pipa.
+by 
+[Gustavo P. Pires](https://orcid.org/0009-0008-3474-6077),
+[Thiago E. Kalid](https://orcid.org/0000-0002-2035-5349),
+[Tatiana de A. Prado](https://orcid.org/0000-0002-4876-2974),
+[Vinícius L. Costa](https://orcid.org/0009-0006-5632-6183),
+[Gabriela R. Pereira](https://orcid.org/0000-0003-3719-1683),
+[Thiago A. R. Passarin](https://orcid.org/0000-0003-1001-5911),
+[Daniel R. Pipa](https://orcid.org/0000-0002-9398-332X).
 
 This repository contains the data and source code used to produce the results presented in:
+
+>
+>
+>
 
     X
 |                              | Info |
@@ -10,7 +21,7 @@ This repository contains the data and source code used to produce the results pr
 | Version of record            |      |
 | Open-access preprint on SSRN |      | 
 | Archive of this repository   |      | 
-| Reproducing our results      |      | 
+| Reproducing our results | [`REPRODUCING.md`](REPRODUCING.md) |
 
 # Abstract
 

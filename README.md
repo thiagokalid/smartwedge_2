@@ -20,7 +20,7 @@ This repository contains the data and source code used to produce the results pr
 |------------------------------|------|
 | Version of record            |      |
 | Open-access preprint on SSRN |      | 
-| Archive of this repository   |      | 
+| Archive of this repository   |   [`https://doi.org/10.5281/zenodo.15115255`](https://doi.org/10.5281/zenodo.15115255)   | 
 | Reproducing our results | [`REPRODUCING.md`](REPRODUCING.md) |
 
 # Abstract

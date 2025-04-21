@@ -11,15 +11,14 @@ by
 
 This repository contains the data and source code used to produce the results presented in:
 
->
->
->
-
-    X
+> Pires, Gustavo P. and Kalid, Thiago E. and Prado, Tatiana de A. and Costa, Vinicius L. and Pereira, Gabriela R. and Passarin, Thiago A. R. and Pipa, Daniel, An Acoustic Lens for Displacement-Free Sectorial Inspection of Pipes with Ultrasonic Phased Arrays. Available at SSRN: https://ssrn.com/abstract=5224648 or http://dx.doi.org/10.2139/ssrn.5224648
+ 
+ 
+ 
 |                              | Info |
 |------------------------------|------|
 | Version of record            |      |
-| Open-access preprint on SSRN |      | 
+| Open-access preprint on SSRN |   [`https://dx.doi.org/10.2139/ssrn.5224648`](https://dx.doi.org/10.2139/ssrn.5224648)   | 
 | Archive of this repository   |   [`https://doi.org/10.5281/zenodo.15115255`](https://doi.org/10.5281/zenodo.15115255)   | 
 | Reproducing our results | [`REPRODUCING.md`](REPRODUCING.md) |
 

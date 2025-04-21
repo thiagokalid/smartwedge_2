@@ -9,11 +9,12 @@ by
 [Thiago A. R. Passarin](https://orcid.org/0000-0003-1001-5911),
 [Daniel R. Pipa](https://orcid.org/0000-0002-9398-332X).
 
+ <br>
 This repository contains the data and source code used to produce the results presented in:
 
 > Pires, Gustavo P. and Kalid, Thiago E. and Prado, Tatiana de A. and Costa, Vinicius L. and Pereira, Gabriela R. and Passarin, Thiago A. R. and Pipa, Daniel, An Acoustic Lens for Displacement-Free Sectorial Inspection of Pipes with Ultrasonic Phased Arrays. Available at SSRN: https://ssrn.com/abstract=5224648 or http://dx.doi.org/10.2139/ssrn.5224648
  
- 
+<br>
  
 |                              | Info |
 |------------------------------|------|

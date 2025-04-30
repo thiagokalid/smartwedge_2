@@ -18,7 +18,7 @@ def dist(x1, y1, x2, y2):
     return sqrt((x1-x2)**2 + (y1-y2)**2)
 
 @njit(parallel=True)
-def fmc_sim_kernel(tspan: ndarray, tofs: ndarray, amplitudes: ndarray, n_elem: int, fc_Hz: float, bw: float) -> ndarray:
+def fmc_sim_kernel(tspan: ndarray, tofs: ndarray, t_coeff: ndarray, direct : ndarray, n_elem: int, fc_Hz: float, bw: float) -> ndarray:
     ascan_data = np.zeros(shape=(len(tspan), n_elem, n_elem), dtype=FLOAT)
 
     for combined_idx in prange(n_elem * n_elem):
@@ -31,7 +31,10 @@ def fmc_sim_kernel(tspan: ndarray, tofs: ndarray, amplitudes: ndarray, n_elem: i
         ascan_data[:, idx_e, idx_r] = numba_gausspulse(tspan - (tof_r + tof_e), fc_Hz, bw)
 
         # Considering amplitude loss due to transmission coefficient (value is equal to 1 if not considered):
-        ascan_data[:, idx_e, idx_r] *= amplitudes[idx_e] # Falta especificar o emsisor/reecptor
+        ascan_data[:, idx_e, idx_r] *= t_coeff[idx_e] * t_coeff[idx_r]
+
+        # Considering amplitude loss due to transmission coefficient (value is equal to 1 if not considered):
+        ascan_data[:, idx_e, idx_r] *= direct[idx_r]
 
     return ascan_data
 

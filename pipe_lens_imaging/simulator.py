@@ -68,7 +68,9 @@ class Simulator:
         self.fmcs = np.zeros(shape=(Nt, Nel, Nel, Nsim), dtype=FLOAT)
 
         for i in prange(Nsim):
-            self.fmcs[..., i] = fmc_sim_kernel(self.tspan, tofs[:, i], amplitudes[:, i], Nel, self.raytracer.transducer.fc, self.raytracer.transducer.bw)
+            t_coeff = amplitudes['transmission_loss'][:, i]
+            direct = amplitudes['directivity'][:, i]
+            self.fmcs[..., i] = fmc_sim_kernel(self.tspan, tofs[:, i], t_coeff, direct , Nel, self.raytracer.transducer.fc, self.raytracer.transducer.bw)
 
     def __get_sscan(self):
         self.fmcs = self.__get_fmc()

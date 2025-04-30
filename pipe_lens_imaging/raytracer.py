@@ -4,9 +4,9 @@ from numpy import ndarray, pi
 from numpy.linalg import norm
 
 from pipe_lens.raytracing_utils import uhp, roots_bhaskara, snell
-from pipe_lens.acoustic_lens import AcousticLens
-from pipe_lens.geometric_utils import Pipeline
-from pipe_lens.transducer import Transducer
+from pipe_lens_imaging.acoustic_lens import AcousticLens
+from pipe_lens_imaging.pipeline import Pipeline
+from pipe_lens_imaging.transducer import Transducer
 
 from pipe_lens_imaging.ultrasound import *
 
@@ -34,44 +34,44 @@ class RayTracer:
 
     def solve(self, xf, zf, maxiter: int = 6):
         solution = self.__newton_batch(xf, zf, maxiter)
-        n_reflections = len(xf)
         n_elem = self.transducer.num_elem
         n_focii = len(xf)
-
-        tofs = np.zeros(shape=(self.transducer.num_elem, n_focii), dtype=FLOAT)
 
         coord_elements = np.array([self.transducer.xt, self.transducer.zt]).T
         coords_reflectors = np.array([xf, zf]).T
         coords_lens = np.zeros(shape=(n_elem, 2, n_focii))
         coords_outer = np.zeros(shape=(n_elem, 2, n_focii))
 
-        amplitudes = np.ones(shape=(n_elem, n_focii), dtype=FLOAT)
+        amplitudes = {
+            "transmission_loss": np.ones(shape=(n_elem, n_focii), dtype=FLOAT),
+            "directivity": np.ones(shape=(n_elem, n_focii), dtype=FLOAT)
+        }
 
         for combined_idx in range(n_focii * n_elem):
             i = combined_idx // n_elem
             j = combined_idx % n_elem
 
-            coords_lens[j, :, i] = solution[j]['xlens'][i], solution[j]['zlens'][i]
-            coords_outer[j, :, i] = solution[j]['xpipe'][i], solution[j]['zpipe'][i]
+            coords_lens[j, 0, i], coords_lens[j, 1, i] = solution[j]['xlens'][i], solution[j]['zlens'][i]
+            coords_outer[j, 0, i], coords_outer[j, 1, i] = solution[j]['xpipe'][i], solution[j]['zpipe'][i]
 
             if self.transmission_loss:
                 Tpp_12, _ = liquid2solid_t_coeff(
-                    solution[j]['interface12'][0], solution[j]['interface12'][1],
-                    self.acoustic_lens.c1, self.acoustic_lens.c2,
+                    solution[j]['interface_12'][0][i], solution[j]['interface_12'][1][i],
+                    self.acoustic_lens.c1, self.acoustic_lens.c2, self.acoustic_lens.c1/2,
                     self.acoustic_lens.rho1, self.acoustic_lens.rho2
                 )
 
                 Tpp_23, _ = solid2solid_t_coeff(
-                    solution[j]['interface23'][0], solution[j]['interface23'][1],
-                    self.acoustic_lens.c2, self.pipeline.c,
+                    solution[j]['interface_23'][0][i], solution[j]['interface_23'][1][i],
+                    self.acoustic_lens.c2, self.pipeline.c, self.acoustic_lens.c2/2, self.pipeline.c/2,
                     self.acoustic_lens.rho2, self.pipeline.rho
                 )
-                amplitudes[j, i] *= Tpp_12 * Tpp_23
+                amplitudes["transmission_loss"][j, i] *= Tpp_12 * Tpp_23
 
             if self.directivity:
                 theta = solution[j]['firing_angle'][i]
                 k = self.transducer.fc * 2 * np.pi / self.acoustic_lens.c1
-                amplitudes[j, i] *= far_field_directivity_solid(
+                amplitudes["directivity"][j, i] *= far_field_directivity_solid(
                     theta,
                     self.acoustic_lens.c1, self.acoustic_lens.c1/2,
                     k,

@@ -240,3 +240,8 @@ def pcd_to_mesh(pcd, depth=7, scale=1.1, smooth=0):
     print(f'Generated mesh with {len(mesh.triangles)} triangles')
     return mesh
 
+def get_class_by_attribute(models, attribute, class_type, attribute_name="nicknames", class_name="transducer"):
+    for model in models:
+        if attribute in model[attribute_name]:
+            return class_type(*model["attributes"].values())
+    raise TypeError(f"There is no {class_name} with the given {attribute_name}.")

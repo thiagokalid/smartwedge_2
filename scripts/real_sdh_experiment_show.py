@@ -10,8 +10,10 @@ from pipe_lens_imaging.raytracer import RayTracer
 from pipe_lens.transducer import Transducer
 from numpy import pi, sin, cos
 
+import gc
 #
 from pipe_lens_imaging.simulator import Simulator
+from pipe_lens_imaging.simulator_utils import dist
 
 linewidth = 6.3091141732 # LaTeX linewidth
 
@@ -58,44 +60,28 @@ alpha_max = pi/4
 alpha_min = -pi/4
 alpha_span = np.arange(alpha_min, alpha_max + delta_alpha, delta_alpha)
 
-focus_radius = inner_radius + (wall_width - 8.99e-3)
 focus_angle = np.copy(alpha_span)
-xf, zf = focus_radius * sin(focus_angle), focus_radius * cos(focus_angle)
+focus_radius = inner_radius + 10e-3
 
-tofs_roi, amp = raytracer.solve(xf, zf)
-delay_law_focused = tofs_roi[transducer.num_elem // 2, :] - tofs_roi
-
-#%%
-
-configs = {
-    "gate_end": 70e-6,
-    "gate_start": 50e-6,
-    "fs": 32.25e6, # Hz
-    "response_type": "s-scan",
-    "emission_delaylaw": delay_law_focused,
-    "reception_delaylaw": delay_law_focused
-}
-
-chosen_angle = [0, 15, 30]
+chosen_angle = [0.5, 15.5, 29.5]
 idxs = [np.where(np.abs(np.degrees(focus_angle) - float(chosen_angle[i])) < 1e-6)[0][0] for i in range(len(chosen_angle))]
-x_reflector, z_reflector = xf[idxs], zf[idxs]
-
-
-sim = Simulator(configs, raytracer)
-sim.add_reflector(x_reflector, z_reflector, different_instances=True)
-sscans = sim.get_response()
-
-sscans_envelope = [envelope(sscans[..., i], axis=0) for i in range(sscans.shape[-1])]
-max_sscan = np.max(sscans_envelope)
-sscans_normalized = [sscans_envelope[i]/max_sscan for i in range(sscans.shape[-1])]
-sscans_log = [np.log10(sscans_normalized[i] + 1e-9) for i in range(sscans.shape[-1])]
 
 #%%
-# plt.figure()
-# plt.imshow(np.diagonal(sscans_normalized[0], axis1=1, axis2=2), extent=[0, 64, sim.tspan[-1] * 1e6, sim.tspan[0] * 1e6], interpolation='none')
-# plt.plot(32, scatterer_time, 'or')
+root = "../data/api/"
+data_insp = file_m2k.read(root + f"active_dir_xl_focused_1degree_v1.m2k", freq_transd=5, bw_transd=0.5, tp_transd='gaussian')
+data_ref = file_m2k.read(root + f"ref_xl_focused.m2k", freq_transd=5, bw_transd=0.5, tp_transd='gaussian')
+t_span = data_insp.time_grid
+
+sscans_envelope = envelope(np.sum(data_insp.ascan_data - np.mean(data_ref.ascan_data, axis=3)[..., np.newaxis], axis=2), axis=0)
+sscans_envelope /= 218990.3
+
+del data_insp, data_ref
+gc.collect()
 
 #%%
+
+ang_positions = np.arange(-1.5, 45 * 1, 1)
+idxs_positions = [np.where(np.abs(ang_positions - float(chosen_angle[i])) < 1e-6)[0] for i in range(len(chosen_angle))]
 
 filled_marker_style = dict(marker='o', linestyle=':', markersize=20,
                            color='none',
@@ -112,10 +98,14 @@ for i in range(len(idxs)):
 
     # plt.imshow(sscans_log[0], extent=[np.rad2deg(alpha_min), np.rad2deg(alpha_max), sim.tspan[-1] * 1e6, sim.tspan[0] * 1e6],
     #            aspect='auto', interpolation='none', vmin=-6, vmax=0, cmap='jet')
-    im = plt.imshow(sscans_envelope[i] / 1500,
-                    extent=[np.rad2deg(alpha_min), np.rad2deg(alpha_max), sim.tspan[-1] * 1e6, sim.tspan[0] * 1e6],
-                    aspect='auto', interpolation='none', vmin=0, vmax=1, cmap='jet')
 
+    #
+    # sscans_envelope[:489, :, :] = 0
+    # sscans_envelope[948:, :, :] = 0
+
+    im = plt.imshow(sscans_envelope[..., idxs_positions[i]],
+                    extent=[np.rad2deg(alpha_min), np.rad2deg(alpha_max), t_span[-1], t_span[0]],
+                    aspect='auto', interpolation='none', cmap='jet', vmin=0, vmax=1)
     # TOFs of interest:
     outer_surf_time = ((d - h0) / c1 + (h0 - pipeline.outer_radius) / c2) * 2 * 1e6
     inner_surf_time = outer_surf_time + 2 * pipeline.wall_width / c3 * 1e6
@@ -124,7 +114,7 @@ for i in range(len(idxs)):
     # Plots:
     plt.plot(np.degrees(alpha_span), np.ones_like(alpha_span) * outer_surf_time, color='r', linewidth=3)
     plt.plot(np.degrees(alpha_span), np.ones_like(alpha_span) * inner_surf_time, color='r', linewidth=3)
-    plt.plot(np.rad2deg(focus_angle[idxs[i]]), scatterer_time, **filled_marker_style)
+    # plt.plot(np.rad2deg(focus_angle[idxs[i]]), scatterer_time, **filled_marker_style)
     plt.ylim([64.2, 53])
     plt.grid(alpha=.25)
     plt.xlabel(r"$\alpha$-axis / (degrees)")
@@ -132,9 +122,9 @@ for i in range(len(idxs)):
     plt.xticks(np.arange(-45, 45 + 15, 15))
 
     if i + 1 == 1:
-        plt.suptitle("Spatial Impulse Response simulation")
+        plt.suptitle("SDH experiment")
         # plt.colorbar()
-        plt.legend()
+        # plt.legend()
         cax = plt.gca().inset_axes([0.15, .125, 0.7, .025])
         cb = fig.colorbar(im, cax=cax, orientation='horizontal', shrink=.7)
         cb.ax.tick_params(axis='x', colors='white')  # set colorbar tick color
@@ -144,5 +134,5 @@ for i in range(len(idxs)):
             t.set_color('white')
 
 plt.tight_layout()
-plt.savefig("../figures/sir_simulator_example.pdf")
+plt.savefig("../figures/sdh_experiment.pdf")
 plt.show()

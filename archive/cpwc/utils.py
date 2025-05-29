@@ -17,15 +17,3 @@ def compute_tof(xroi, zroi, xt, zt, c_specimen, c_coupling = None):
         tof = dist / c_specimen
     return tof
 
-def newton_circle_reception(xf: float, zf: float, xa: float, za: float, xc, zc, r, c1, c2, maxiter: int = 10, tol: float = 1e-6):
-    # (xf, zf) focus location
-    # (xa, za) element location
-    # (xc, zc) center of circle with 'r' radius.
-    # All values in SI unit, i.e. meter, second, etc.
-
-    i = 0
-    x0 = 0
-
-    
-
-    while (i < maxiter) and abs(f(x0)) > tol:

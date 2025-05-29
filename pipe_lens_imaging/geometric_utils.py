@@ -1,4 +1,10 @@
+import numba
+
 from numpy import sin, cos, pi, arange, sqrt
+
+@numba.njit(fastmath=True)
+def f_circ(x, xc, zc, r):
+    return zc - sqrt(r**2 - (x - xc)**2)
 
 def rotate(x, y, angle, shift_x=0, shift_y=0):
     newx = x * cos(angle) - y * sin(angle) + shift_x
@@ -17,5 +23,3 @@ def pol2cart(rho, phi):
     y = rho * cos(phi)
     x = rho * sin(phi)
     return x, y
-
-

@@ -17,13 +17,6 @@ if __name__ == '__main__':
     pwi_data = data_insp.ascan_data[..., 0]
     Nt, Nangs, Nel = pwi_data.shape
 
-    plt.figure()
-    plt.imshow(pwi_data[:, 0, :], extent=[-.5, 64.5, data_insp.time_grid[-1], data_insp.time_grid[0]], aspect='auto')
-    plt.show()
-
-    plt.plot(data_insp.time_grid * 1e-6 / 2 * 1483 * 1e3, pwi_data[:, 140, 32])
-    plt.show()
-
     #%% User-input:
 
     # Transducer:
@@ -47,21 +40,36 @@ if __name__ == '__main__':
 
     radius = 140e-3 / 2
     waterpath = 32e-3
-    wall_thickness = 17.23e-3
+    wall_thickness = 17.23e-3 + 5e-3
 
     xcenter, zcenter = 0, waterpath + radius
 
     # ROI:
-    xroi = np.linspace(-35, 35, 700) * 1e-3
-    zroi = np.linspace(20, 70, 500) * 1e-3
+    roi_coord_system = "cartesian"  # or "cartesian" or "polar"
 
+    if roi_coord_system == "polar":
+        delta_r = .05e-3
+        delta_ang = .1
+        r_roi = np.arange(radius - wall_thickness - 10e-3, radius + 10e-3, delta_r)
+        ang_roi = np.radians(np.arange(-20, 90, delta_ang))
+
+        aa, rr = np.meshgrid(-ang_roi, r_roi)
+        xx, zz = xcenter - rr * np.sin(aa), zcenter - rr * np.cos(aa)
+
+    elif roi_coord_system == "cartesian":
+        xroi = np.linspace(-35, 35, 700) * 1e-3
+        zroi = np.linspace(20, 70, 500) * 1e-3
+        xx, zz = np.meshgrid(xroi, zroi)
+    else:
+        raise NotImplementedError
 
     #%%
     ti = time.time()
-    img, delaylaw = cpwc_circle_kernel(pwi_data, xroi, zroi, xt, zt, xcenter, zcenter, radius, steering_angs, c_coupling, c_specimen, fs, gate_start)
+    img, delaylaw = cpwc_circle_kernel(pwi_data, xx, zz, xt, zt, xcenter, zcenter, radius, wall_thickness, steering_angs, c_coupling, c_specimen, fs, gate_start, insideMaterialMask=True, spatialWeightingMask=False)
     tf = time.time()
     print(f"Elapsed-time = {tf - ti:.2f}")
 
+    img_env = np.abs(img)
     img_env = envelope(img, axis=0)
     img_db = 20 * np.log10(img_env / img_env.max() + 1e-6)
 

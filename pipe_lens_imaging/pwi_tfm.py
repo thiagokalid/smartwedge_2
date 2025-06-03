@@ -4,7 +4,7 @@ import numba
 from .pwi_tfm_utils import *
 import time
 
-def cpwc_circle_kernel(pwi_data, xroi, zroi, xt, zt, xcenter, zcenter, radius, thickness, thetas, c_coupling, c_specimen, fs, gate_start=0, insideMaterialMask=True, spatialWeightingMask=True):
+def cpwc_circle_kernel(pwi_data, xroi, zroi, xt, zt, xcenter, zcenter, radius, thickness, thetas, c_coupling, c_specimen, fs, gate_start=0, insideMaterialMask=True, spatialWeightingMask=True, verbose=True):
     Nrows, Ncols = zroi.shape[0], zroi.shape[1]
     Nangs = pwi_data.shape[1]
     baseline_shift = np.int64(gate_start * fs)
@@ -14,7 +14,8 @@ def cpwc_circle_kernel(pwi_data, xroi, zroi, xt, zt, xcenter, zcenter, radius, t
     pwi_tof, xe, ze = compute_delaylaw_pwi(thetas, xt, zt, xcenter, zcenter, radius, c_coupling, c_specimen)
     t_ref = np.max(pwi_tof)
     delay_law = t_ref - pwi_tof
-    print(f"delay-law. Time-elapsed = {time.time() - t0:.2f} s")
+    if verbose:
+        print(f"delay-law. Time-elapsed = {time.time() - t0:.2f} s")
 
     t0 = time.time()
 
@@ -23,18 +24,21 @@ def cpwc_circle_kernel(pwi_data, xroi, zroi, xt, zt, xcenter, zcenter, radius, t
     if insideMaterialMask:
         tmp_mask = is_inside_pipe(xroi, zroi, xcenter, zcenter, radius, thickness)
         mask *= tmp_mask[np.newaxis, ...]
-    print(f"pipe_filter. Time-elapsed = {time.time() - t0:.2f} s")
+    if verbose:
+        print(f"pipe_filter. Time-elapsed = {time.time() - t0:.2f} s")
 
     t0 = time.time()
     if spatialWeightingMask:
         mask *= is_inside_pwr(thetas, xroi, zroi, xt, zt, xe, ze, xcenter, zcenter, radius, c_coupling, c_specimen)
-    print(f"pwi_filter. Time-elapsed = {time.time() - t0:.2f} s")
+    if verbose:
+        print(f"pwi_filter. Time-elapsed = {time.time() - t0:.2f} s")
 
     binary_mask = np.sum(mask, axis=0) > 0
 
     t0 = time.time()
     t_tfm = compute_t_tfm(xroi, zroi, xt, zt, xcenter, zcenter, radius, c_coupling, c_specimen, binary_mask)
-    print(f"t_tfm. Time-elapsed = {time.time() - t0:.2f} s")
+    if verbose:
+        print(f"t_tfm. Time-elapsed = {time.time() - t0:.2f} s")
 
     t0 = time.time()
     t_pwi = compute_t_pwi(
@@ -42,11 +46,13 @@ def cpwc_circle_kernel(pwi_data, xroi, zroi, xt, zt, xcenter, zcenter, radius, t
         t_ref, xcenter, zcenter,
         c_specimen,
         binary_mask)
-    print(f"t_pwi. Time-elapsed= {time.time() - t0:.2f} s")
+    if verbose:
+        print(f"t_pwi. Time-elapsed= {time.time() - t0:.2f} s")
 
     t0 = time.time()
     img = cpwc_coherent_sum(pwi_data, t_pwi, t_tfm, fs, baseline_shift, mask)
-    print(f"coherent-sum. Time-elapsed= {time.time() - t0:.2f} s")
+    if verbose:
+        print(f"coherent-sum. Time-elapsed= {time.time() - t0:.2f} s")
 
     return img, delay_law
 

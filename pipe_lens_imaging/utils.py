@@ -13,6 +13,7 @@ Este módulo contém as funções utilitárias para uso geral do (*framework*).
 import numpy as np
 import open3d as o3d
 
+
 from pipe_lens.imaging_utils import convert_corners_time2idx, moving_average
 
 def api_func(img, t, ang, corner_in_time, thresh=.5, drawSquare=True):
@@ -130,7 +131,27 @@ def api_func_polar(sscan, r_span, theta_deg_span, corners_in, thresh=-6, drawSqu
 
     return api, maxAbsoluteLocation, pixels_above_threshold, maximumAmplitude, estimated_width, estimated_height
 
+def api(img, xaxis, zaxis, corners, thresh=-6, drawSquare=False):
+    #corners = (superior-esquerdo, inferior-direito) considerando a imagem na visualizaçaõ eixo z para baixo e x para direita
+    NE_corner, SW_corner = corners
 
+    if (NE_corner[0] >= SW_corner[0] or NE_corner[1] <= SW_corner[0]):
+        raise ValueError("Invalid Corners")
+
+    xmin, xmax = NE_corner[0], SW_corner[0]
+    zmin, zmax = NE_corner[1], SW_corner[1]
+
+    i0, i1 = np.argmin(np.abs(xaxis - xmin)), np.argmin(np.abs(xaxis - xmax))
+    j0, j1 = np.argmin(np.abs(zaxis - zmin)), np.argmin(np.abs(zaxis - zmax))
+
+    pixel_area = (xaxis[1] - xaxis[0]) * (zaxis[1] - zaxis[0])
+
+    croped_region = img[j0 : j1 + 1, i0 : i1 + 1]
+    local_maximum = np.max(croped_region)
+    binary_mask = croped_region >= local_maximum * 10 ** (thresh / 20)
+    api = np.sum(binary_mask) * pixel_area
+
+    return api, local_maximum, binary_mask
 
 
 def pointlist_to_cloud(points, steps, orient_tangent=False, xlen=None, radius_top=10, radius_bot=10):

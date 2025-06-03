@@ -6,6 +6,8 @@ __pycache__/
 /archive
 # C extensions
 *.so
+*.zip
+archive/*
 
 #
 data/*

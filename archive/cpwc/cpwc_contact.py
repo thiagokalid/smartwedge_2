@@ -1,10 +1,8 @@
 import numpy as np
 import numba
 
-from .utils import compute_tof
-
 @numba.njit(parallel=True)
-def cpwc_contact_kernel2(pwi_data, xroi, zroi, xt, zt, thetas, c_specimen, fs, gate_start=0):
+def cpwc_contact_kernel(pwi_data, xroi, zroi, xt, zt, thetas, c_specimen, fs, gate_start=0):
     Nt, Nangs, Nel = pwi_data.shape
     Nrows = zroi.shape[0]
     Ncols = xroi.shape[0]

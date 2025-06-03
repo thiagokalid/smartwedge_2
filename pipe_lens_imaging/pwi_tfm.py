@@ -19,7 +19,7 @@ def cpwc_circle_kernel(pwi_data, xroi, zroi, xt, zt, xcenter, zcenter, radius, t
 
     t0 = time.time()
 
-    mask = np.ones(shape=(Nangs, Nrows, Ncols))
+    mask = np.ones(shape=(Nangs, Nrows, Ncols), dtype=np.bool)
 
     if insideMaterialMask:
         tmp_mask = is_inside_pipe(xroi, zroi, xcenter, zcenter, radius, thickness)
@@ -33,7 +33,7 @@ def cpwc_circle_kernel(pwi_data, xroi, zroi, xt, zt, xcenter, zcenter, radius, t
     if verbose:
         print(f"pwi_filter. Time-elapsed = {time.time() - t0:.2f} s")
 
-    binary_mask = np.sum(mask, axis=0) > 0
+    binary_mask = np.sum(mask, axis=0, dtype=np.bool) == True
 
     t0 = time.time()
     t_tfm = compute_t_tfm(xroi, zroi, xt, zt, xcenter, zcenter, radius, c_coupling, c_specimen, binary_mask)
@@ -42,46 +42,57 @@ def cpwc_circle_kernel(pwi_data, xroi, zroi, xt, zt, xcenter, zcenter, radius, t
 
     t0 = time.time()
     t_pwi = compute_t_pwi(
-        thetas, xroi, zroi, 
+        thetas, xroi, zroi,
         t_ref, xcenter, zcenter,
         c_specimen,
         binary_mask)
     if verbose:
         print(f"t_pwi. Time-elapsed= {time.time() - t0:.2f} s")
 
+
+    del binary_mask
+    indexes = np.arange(Nangs * Ncols * Nrows, dtype=np.int64)[np.ravel(mask, order='C')]
+    del mask
+
     t0 = time.time()
-    img = cpwc_coherent_sum(pwi_data, t_pwi, t_tfm, fs, baseline_shift, mask)
+    img = cpwc_coherent_sum(pwi_data, t_pwi, t_tfm, fs, baseline_shift, indexes)
     if verbose:
         print(f"coherent-sum. Time-elapsed= {time.time() - t0:.2f} s")
 
     return img, delay_law
 
-@numba.njit(fastmath=True, parallel=True)
-def cpwc_coherent_sum(pwi_data, t_pwi, t_tfm, fs, baseline_shift, mask):
+@numba.njit(parallel=True, fastmath=True)
+def cpwc_coherent_sum(pwi_data, t_pwi, t_tfm, fs, baseline_shift, indexes):
     Nt, Nangs, Nel = pwi_data.shape
     Nrows, Ncols, _ = t_tfm.shape
 
+    # Allocate output image
     img = np.zeros((Nrows, Ncols), dtype=np.float32)
+
+    # Create thread-local image buffers to avoid race conditions
     thread_imgs = np.zeros((numba.get_num_threads(), Nrows, Ncols), dtype=np.float32)
 
-    for idx in numba.prange(Nangs * Nel):
-        k = idx // Nel
-        n = idx % Nel
+    for idx in numba.prange(indexes.size):
+        flat_idx = indexes[idx]
 
+        # Fortran-style (column-major) index decoding
+        i = flat_idx % Ncols
+        j = (flat_idx // Ncols) % Nrows
+        k = flat_idx // (Ncols * Nrows)
+
+        # Get current thread ID (still using internal API)
         thread_id = numba.np.ufunc.parallel._get_thread_id()
 
-        for j in range(Nrows):
-            for i in range(Ncols):
-                if mask[k, j, i] == False:
-                    continue
+        ti = t_pwi[k, j, i]
 
-                ti = t_pwi[k, j, i]
-                tv = t_tfm[j, i, n]
-                shift = int(round((ti + tv) * fs)) - baseline_shift
+        for n in range(Nel):
+            tv = t_tfm[j, i, n]
+            shift = int(round((ti + tv) * fs)) - baseline_shift
 
-                if 0 <= shift < Nt:
-                    thread_imgs[thread_id, j, i] += pwi_data[shift, k, n]
+            if 0 <= shift < Nt:
+                thread_imgs[thread_id, j, i] += pwi_data[shift, k, n]
 
+    # Combine per-thread results
     for t in range(numba.get_num_threads()):
         img += thread_imgs[t]
 

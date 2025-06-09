@@ -1,20 +1,17 @@
-# -*- coding: utf-8 -*-
-"""
-Módulo ``utils``
-=================
-
-Este módulo contém as funções utilitárias para uso geral do (*framework*).
-
-.. raw:: html
-
-    <hr>
-
-"""
 import numpy as np
 import open3d as o3d
 
-
 from pipe_lens.imaging_utils import convert_corners_time2idx, moving_average
+
+__all__ = [
+    'api_func',
+    'api_func_polar',
+    'api',
+    'fwhm',
+    'pointlist_to_cloud',
+    'pcd_to_mesh',
+    'get_class_by_attribute',
+]
 
 def api_func(img, t, ang, corner_in_time, thresh=.5, drawSquare=True):
     corners = convert_corners_time2idx(t, ang, corner_in_time)
@@ -152,6 +149,27 @@ def api(img, xaxis, zaxis, corners, thresh=-6, drawSquare=False):
     api = np.sum(binary_mask) * pixel_area
 
     return api, local_maximum, binary_mask
+
+def lin_interp(x, y, i, half):
+    return x[i] + (x[i+1] - x[i]) * ((half - y[i]) / (y[i+1] - y[i]))
+
+def half_max_x(x, y):
+    half = max(y)/2.0
+    signs = np.sign(np.add(y, -half))
+    zero_crossings = (signs[0:-2] != signs[1:-1])
+    zero_crossings_i = np.where(zero_crossings)[0]
+    return [lin_interp(x, y, zero_crossings_i[0], half),
+            lin_interp(x, y, zero_crossings_i[1], half)]
+
+def fwhm(signal, xspan=None):
+    # Compute the Full Width Half Maximum assuming only peak exist within the signal.
+    # If xspan is not given, FWHM will be computed in number of samples.
+
+    if xspan is None:
+        xspan = np.arange(len(signal))
+
+    return half_max_x(xspan, signal)
+
 
 
 def pointlist_to_cloud(points, steps, orient_tangent=False, xlen=None, radius_top=10, radius_bot=10):

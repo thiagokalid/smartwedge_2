@@ -42,7 +42,7 @@ def out_surfaces(img, lamb=100, rho=10):
     idx = idx.astype(int)
     return idx
 
-def int_surfaces(img, idx_cut=500, threshold=0.8, height=0.021, lamb=0.1, rho=0.01):
+def int_surfaces(img, idx_cut=500, threshold=0.8, height=21e-3, lamb=0.1, rho=0.01):
     sscan_windowed = img[idx_cut:, :]
 
     a = img_line_first_echoes(
@@ -104,6 +104,8 @@ if __name__ == '__main__':
 
     thickness_map = np.zeros(shape=(n_shots, len(ang_span))) # z-axis -> (thickness, theta)
 
+    generateVideo = False
+
     for k in tqdm(range(1, n_shots)):
         data_insp = file_m2k.read(filename_insp, freq_transd=5, bw_transd=0.5, tp_transd='gaussian', sel_shots=k)
         channels_insp = data_insp.ascan_data[..., 0]
@@ -125,10 +127,6 @@ if __name__ == '__main__':
         # plt.plot(idx_bot, color='k')
         # plt.title(f"shot {k}")
         # plt.show()
-
-
-
-
 
         z_span = (c * (data_insp.time_grid[z0:z1]) / 2000)[:,0]
 
@@ -216,6 +214,25 @@ if __name__ == '__main__':
                 pfac2.extend(
                     [(aux_back[i], k-0.2, j) for i, j in enumerate(np.linspace(top[l] + stepz, bot[l] - stepz, n_pts))])
 
+
+        if generateVideo:
+            plt.figure(figsize=(8, 6))
+            plt.title(f"Normalized S-scan (log-scale) of a passive \n diretion sweep with acoustic lens. $y={y_span[k] * 1e3:.2f}$ mm.")
+            plt.pcolormesh(ang_span, z_span, np.log10(img + 1e-6), cmap='inferno', vmin=-5, vmax=0)
+            plt.plot(ang_span, top_plain, 'w-', linewidth=2)
+            plt.plot(ang_span, bot_plain, 'w-', linewidth=2)
+
+            plt.ylabel("Radial direction / (mm)")
+            plt.xlabel(rf"$\alpha$-axis / (degrees)")
+            plt.colorbar()
+            plt.grid(alpha=.5)
+            plt.ylim([48, 72])
+            plt.xticks(np.arange(-45, 45 + 15, 15))
+            plt.yticks(np.arange(50, 70 + 5, 5))
+            plt.tight_layout()
+            plt.savefig(f"../figures/lens_frames_surf/file{k:02d}.png")
+            plt.close()
+
     pts = [surftop, surfbot, pfac1, pfac2, psid1, psid2]
 
     #%%
@@ -227,12 +244,20 @@ if __name__ == '__main__':
     plt.colorbar()
     plt.xlabel(r'$\alpha$ / (degrees)')
     plt.ylabel(r'Passive direction / (mm)')
-    plt.tight_layout()
 
-    plt.yticks(np.arange(0, 150, 45))
-    plt.xticks(np.linspace(-45, 45, 5))
-    plt.savefig("../figures/corrosion_map_2d.pdf")
-    plt.show()
+    ytemp = np.arange(y_span[0] - 10e-3, y_span[-1] + 10e-3, 1e-3) * 1e3
+    xtemp = 1 / 2 * 60 / (2 * np.pi * 51.55) * 360 * np.ones_like(ytemp)
+    # plt.plot(-xtemp, ytemp, 'r--', linewidth=1)
+    # plt.plot(+xtemp, ytemp, 'r--', linewidth=1)
+
+    plt.ylim([y_span[-1] * 1e3, y_span[0] * 1e3])
+    plt.yticks(np.arange(0, 150, 30))
+    plt.xticks(np.linspace(-45, 45, 7))
+
+    plt.grid(alpha=.25)
+    plt.tight_layout()
+    plt.savefig("../figures/corrosion_map_2d_LENS.pdf")
+    # plt.show()
 
 
 

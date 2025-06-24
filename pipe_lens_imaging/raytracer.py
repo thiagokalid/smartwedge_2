@@ -24,6 +24,8 @@ class RayTracer:
         self.transmission_loss = transmission_loss
         self.directivity = directivity
 
+        self.c1 = self.c2 = self.c3 = None
+
     def _solve(self, xf, zf, maxiter: int = 6):
         if isinstance(xf, (int, float)) and isinstance(zf, (int, float)):
             xf, zf = np.array([xf]), np.array([zf])
@@ -32,10 +34,23 @@ class RayTracer:
 
         return solution
 
+    def set_speeds(self, c1, c2, c3):
+        self.c1 = c1
+        self.c2 = c2
+        self.c3 = c3
+
+    def get_speeds(self):
+        c1 = self.acoustic_lens.c1 if self.c1 is None else self.c1  # Wedge material
+        c2 = self.acoustic_lens.c2 if self.c2 is None else self.c2  # Coupling medium
+        c3 = self.pipeline.c if self.c3 is None else self.c3  # Pipeline material
+        return c1, c2, c3
+
     def solve(self, xf, zf, maxiter: int = 6):
         solution = self.__newton_batch(xf, zf, maxiter)
         n_elem = self.transducer.num_elem
         n_focii = len(xf)
+
+        c1, c2, c3 = self.get_speeds()
 
         coord_elements = np.array([self.transducer.xt, self.transducer.zt]).T
         coords_reflectors = np.array([xf, zf]).T
@@ -57,13 +72,13 @@ class RayTracer:
             if self.transmission_loss:
                 Tpp_12, _ = liquid2solid_t_coeff(
                     solution[j]['interface_12'][0][i], solution[j]['interface_12'][1][i],
-                    self.acoustic_lens.c1, self.acoustic_lens.c2, self.acoustic_lens.c1/2,
+                    c1, c2, c1/2,
                     self.acoustic_lens.rho1, self.acoustic_lens.rho2
                 )
 
                 Tpp_23, _ = solid2solid_t_coeff(
                     solution[j]['interface_23'][0][i], solution[j]['interface_23'][1][i],
-                    self.acoustic_lens.c2, self.pipeline.c, self.acoustic_lens.c2/2, self.pipeline.c/2,
+                    c2, c3, c2/2, c3/2,
                     self.acoustic_lens.rho2, self.pipeline.rho
                 )
                 amplitudes["transmission_loss"][j, i] *= Tpp_12 * Tpp_23
@@ -73,7 +88,7 @@ class RayTracer:
                 k = self.transducer.fc * 2 * np.pi / self.acoustic_lens.c1
                 amplitudes["directivity"][j, i] *= far_field_directivity_solid(
                     theta,
-                    self.acoustic_lens.c1, self.acoustic_lens.c1/2,
+                    c1, c1/2,
                     k,
                     self.transducer.element_width
                 )
@@ -86,9 +101,6 @@ class RayTracer:
         d2 = norm(coords_lens - coords_outer, axis=1)  # distance between lens and pipe outer surface
         d3 = norm(coords_outer - coord_reflectors_mat.T, axis=1)  # distance between pipe outer surface and focus
 
-        c1 = self.acoustic_lens.c1  # lens material
-        c2 = self.acoustic_lens.c2  # coupling medium
-        c3 = self.pipeline.c  # pipe material
         tofs = d1 / c1 + d2 / c2 + d3 / c3
 
         return tofs, amplitudes
@@ -168,7 +180,7 @@ class RayTracer:
         der2 = (dm - 2 * d0 + dp) / eps ** 2
         return dic, der1, der2
 
-    def __distalpha(self, xc: float, zc: float, xf: ndarray, yf: ndarray, acurve: float):
+        def __distalpha(self, xc: float, zc: float, xf: ndarray, yf: ndarray, acurve: float):
         """For a shot fired from (xc, yc) in the direction x_y_from_alpha(alpha),
       this function computes the two refractions (from c1 to c2 and from
       c2 to c3) and then computes the squared distance between the ray at c3 and
@@ -179,9 +191,8 @@ class RayTracer:
       (xin, yin): point on the ray closest to (xf, yf)
       dist: squared distance (xin, yin) to (xf, yf)"""
 
-        c1 = self.acoustic_lens.c1  # Wedge material
-        c2 = self.acoustic_lens.c2  # Coupling medium
-        c3 = self.pipeline.c  # Pipeline material
+        # Check if it was considered a different speed compared to the project speed:
+        c1, c2, c3 = self.get_speeds()
 
         # First ray from emitter to lens:
         xlens, ylens = self.acoustic_lens.xy_from_alpha(acurve)
@@ -194,8 +205,9 @@ class RayTracer:
 
         # Second ray a, b and c parameters:
         a = a_line ** 2 + 1
-        b = 2 * a_line * b_line
-        c = b_line ** 2 - self.pipeline.outer_radius ** 2
+        b = 2 * a_line * b_line - 2 * (self.pipeline.x_center + a_line * self.pipeline.z_center)
+        c = b_line ** 2 - self.pipeline.outer_radius ** 2 + (self.pipeline.x_center**2 + self.pipeline.z_center**2 - 2 * self.pipeline.z_center * b_line)
+
         xcirc1, xcirc2 = roots_bhaskara(a, b, c)
         ycirc1, ycirc2 = a_line * xcirc1 + b_line, a_line * xcirc2 + b_line
         upper = ycirc1 > ycirc2

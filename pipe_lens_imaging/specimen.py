@@ -1,11 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+from bisect import bisect
 from pipe_lens_imaging.geometric_utils import rotate
 from pipe_lens_imaging.specimen_utils import *
 from pipe_lens_imaging.utils import get_class_by_attribute
 
-__all__ = ["TubularSpecimen", "get_specimen", "specimens"]
+__all__ = ["PipeWithGrooves", "get_specimen", "specimens"]
 
 
 class GenericSpecimen:
@@ -106,7 +107,7 @@ class GenericSpecimen:
         pass
 
 
-class TubularSpecimen(GenericSpecimen):
+class PipeWithGrooves(GenericSpecimen):
     def __init__(self, outer_radius:float, wall_thickness: float, cl:float, rho: float,
                  flaws_description=None, origin=(0, 0), rotation_around_origin_deg=0
                  , angular_span_deg=(-180, 180)):
@@ -278,8 +279,110 @@ class TubularSpecimen(GenericSpecimen):
             self.flaws_transition_angs["inner_surface"].append((a1, b1))
 
 
+class PipeSBH:
+    def __init__(self,
+                 outer_radius=71.05e-3,
+                 wall_thickness=18.67e-3,
+                 height=250e-3,
+                 ang_lim=45,
+                 ystep=0.5e-3,
+                 ang_step=0.5,
+                 flaw_diameter=5e-3,
+                 theta_offset=0,
+                 includeEnd=True,):
+        self.outer_radius = outer_radius
+        self.wall_thickness = wall_thickness
+        self.inner_radius = outer_radius - wall_thickness
+        self.height = height
+        self.ang_lim = ang_lim
+        self.ystep = ystep
+        self.ang_step = ang_step
+        self.flaw_radius = flaw_diameter / 2
+
+        if includeEnd:
+            self.theta_span = np.radians(np.arange(-ang_lim, ang_lim + ang_step, ang_step) - theta_offset)
+        else:
+            self.theta_span = np.radians(np.arange(-ang_lim, ang_lim, ang_step) - theta_offset)
+
+        self.y_span = np.arange(0, height, ystep)
+        self.n_theta = len(self.theta_span)
+        self.n_y = len(self.y_span)
+
+        self.inner_surface = np.full((self.n_theta, self.n_y), self.inner_radius)
+        self.outer_surface = np.full((self.n_theta, self.n_y), self.outer_radius)
+
+        self.tt, self.yy = np.meshgrid(self.theta_span, self.y_span, indexing="ij")
+        self.flaw_coords = []
+
+    def add_flaw_region(self, nrows, ncols, y0, ystep_flaw, dist_flaw, intercalated):
+        for i in range(nrows):
+            y_flaw = y0 + i * ystep_flaw
+            ncols_curr = ncols - 1 if intercalated and i % 2 == 1 else ncols
+
+            arc_length_mm = (ncols_curr - 1) * dist_flaw
+            arc_length_deg = np.degrees(arc_length_mm / self.inner_radius)
+
+            ang_flaws = np.linspace(0, arc_length_deg, ncols_curr)
+            ang_flaws -= np.mean(ang_flaws)
+
+            self.flaw_coords.extend([(ang, y_flaw) for ang in ang_flaws])
+
+    def carve_flaws(self):
+        for theta_deg, y0 in self.flaw_coords:
+            theta0_rad = np.radians(theta_deg)
+            for i in range(self.n_theta):
+                for j in range(self.n_y):
+                    d_theta = (self.tt[i, j] - theta0_rad) * self.inner_radius
+                    d_y = self.yy[i, j] - y0
+                    dist2 = d_theta**2 + d_y**2
+                    if dist2 <= self.flaw_radius**2:
+                        dz = np.sqrt(self.flaw_radius**2 - dist2)
+                        self.inner_surface[i, j] += dz
+
+    def get_thickness_map(self, y_start=50e-3, y_end=200e-3):
+        thickness_map = (self.outer_surface - self.inner_surface).T * 1e3
+        idx_beg = bisect(self.y_span, y_start) - 1
+        idx_end = bisect(self.y_span, y_end)
+        return thickness_map[idx_beg:idx_end, :]
+
+    def get_flaw_mask(self, flaw_number, y_start=0, y_end=None, radius_tol = 1e-3):
+
+
+
+        beg_idx = bisect(self.y_span, y_start) - 1
+
+        if y_end is not None:
+            end_idx = bisect(self.y_span, y_end)
+
+            tt, yy = np.meshgrid(self.theta_span, self.y_span[beg_idx:end_idx], indexing="ij")
+
+        else:
+            tt, yy = self.tt, self.yy
+
+
+        yy_mask = yy
+        xx_mask, zz_mask = self.inner_radius * np.sin(tt), self.inner_radius * np.cos(tt)
+
+        theta_deg, y_flaw = self.flaw_coords[flaw_number]
+
+        theta0_rad = np.radians(theta_deg)
+
+        x_flaw, z_flaw = self.inner_radius * np.sin(theta0_rad), self.inner_radius * np.cos(theta0_rad)
+
+        mask = (x_flaw - xx_mask)**2 + (z_flaw - zz_mask)**2 + (y_flaw - yy_mask)**2 <= (self.flaw_radius + radius_tol)**2
+
+        return mask.T
+
+
+    def get_slice(self, theta_deg, y_pos):
+        theta_idx = bisect(np.degrees(self.theta_span), theta_deg) - 1
+        y_idx = bisect(self.y_span, y_pos) - 1
+        return self.inner_surface[theta_idx, y_idx], self.outer_surface[theta_idx, y_idx]
+
+
+
 def get_specimen(searched_material_attribute, attribute_name="nicknames"):
-    return get_class_by_attribute(specimens, searched_material_attribute, TubularSpecimen,
+    return get_class_by_attribute(specimens, searched_material_attribute, PipeWithGrooves,
                                   class_name="specimen", attribute_name=attribute_name)
 
 

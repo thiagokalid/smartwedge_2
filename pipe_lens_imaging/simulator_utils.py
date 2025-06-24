@@ -54,7 +54,7 @@ def fmc2sscan(fmc_sims: ndarray, shifts_e, shifts_r, n_elem: int):
 
     sscan = np.zeros(shape=(num_samples, num_laws, num_sims), dtype=FLOAT)
     # signal_recepted_by_focus = np.zeros(shape=(num_samples, num_laws, num_sims), dtype=FLOAT)
-    for scan_idx in tqdm(range(num_laws)): #
+    for scan_idx in range(num_laws): #
         # Delay And Sum in emission:
         shift_e = shifts_e[:, scan_idx]
         rolled_fmc = np.zeros_like(fmc_sims)

@@ -59,8 +59,8 @@ class RayTracer:
         coords_outer = np.zeros(shape=(n_elem, 2, n_focii))
 
         amplitudes = {
-            "transmission_loss": np.ones(shape=(n_elem, n_focii), dtype=FLOAT),
-            "directivity": np.ones(shape=(n_elem, n_focii), dtype=FLOAT)
+            "transmission_loss": np.ones(shape=(n_elem, n_elem, n_focii), dtype=FLOAT),
+            "directivity": np.ones(shape=(n_elem, n_elem, n_focii), dtype=FLOAT)
         }
 
         for combined_idx in range(n_focii * n_elem):
@@ -82,12 +82,12 @@ class RayTracer:
                     c3, c2, c3/2,
                     self.pipeline.rho, self.acoustic_lens.rho2
                 )
-                amplitudes["transmission_loss"][j, i] *= Tpp_12 * Tpp_23
+                amplitudes["transmission_loss"][j, :, i] *= Tpp_12 * Tpp_23
 
             if self.directivity:
                 theta = solution[j]['firing_angle'][i]
                 k = self.transducer.fc * 2 * np.pi / self.acoustic_lens.c1
-                amplitudes["directivity"][j, i] *= far_field_directivity_solid(
+                amplitudes["directivity"][j, :, i] *= far_field_directivity_solid(
                     theta,
                     c1, c1/2,
                     k,

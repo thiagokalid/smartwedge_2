@@ -24,11 +24,14 @@ def fmc_sim_kernel(tspan: ndarray, tofs: ndarray, t_losses: ndarray, r_losses : 
     for combined_idx in prange(n_elem * n_elem):
         idx_e = combined_idx // n_elem
         idx_r = combined_idx % n_elem
-        tof_e = tofs[idx_e]
-        tof_r = tofs[idx_r]
+        tof_e = tofs_tx[idx_e, idx_r]
+        tof_r = tofs_rx[idx_e, idx_r]
 
-        # Ideal gausspulse shifted (spatial impulse simulator):
-        ascan_data[:, idx_e, idx_r] = numba_gausspulse(tspan - (tof_r + tof_e), fc_Hz, bw)
+        if tof_e == -1 or tof_r == -1:
+            continue
+        else:
+            # Ideal gausspulse shifted (spatial impulse simulator):
+            ascan_data[:, idx_e, idx_r] = numba_gausspulse(tspan - (tof_r + tof_e), fc_Hz, bw)
 
         # Losses during transmission, i.e., transmission coefficient.
         ascan_data[:, idx_e, idx_r] *= t_losses[idx_e]

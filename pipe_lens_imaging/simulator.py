@@ -20,6 +20,7 @@ class Simulator:
         self.fs = sim_params["fs"]  # Sampling frequency in Hz
         self.gate_start = sim_params["gate_start"]  # Gate start in seconds
         self.gate_end = sim_params["gate_end"]  # Gate end in seconds
+        self.surface_echoes = sim_params["surface_echoes"]
         self.tspan = np.arange(self.gate_start, self.gate_end + 1 / self.fs, 1 / self.fs)  # Time-grid.
 
         # Inspection type:
@@ -71,6 +72,16 @@ class Simulator:
             t_coeff = amplitudes['transmission_loss'][:, i]
             direct = amplitudes['directivity'][:, i]
             self.fmcs[..., i] = fmc_sim_kernel(self.tspan, tofs[:, i], t_coeff, direct , Nel, self.raytracer.transducer.fc, self.raytracer.transducer.bw)
+
+
+        if self.surface_echoes:
+            # Outer surface:
+            tofs, amplitudes = self.raytracer.solve2(inc_ang=0)
+            transmission_losses = amplitudes['transmission_loss']
+            reception_losses = amplitudes['transmission_loss'] * amplitudes['directivity'] * amplitudes['reflection_loss']
+            fmcs2 = fmc_sim_kernel(self.tspan, tofs, transmission_losses[:, 0], reception_losses[:, 0] , Nel, self.raytracer.transducer.fc, self.raytracer.transducer.bw)
+
+            self.fmcs += fmcs2[:, :, :, np.newaxis]
 
     def __get_sscan(self):
         self.fmcs = self.__get_fmc()

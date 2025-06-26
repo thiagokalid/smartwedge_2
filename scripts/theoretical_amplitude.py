@@ -49,7 +49,7 @@ transducer = Transducer(pitch=.5e-3, bw=.4, num_elem=64, fc=5e6)
 transducer.zt += acoustic_lens.d
 
 # Raytracer engine to find time of flight between emitter and focus:
-raytracer = RayTracer(acoustic_lens, pipeline, transducer, transmission_loss=True, directivity=True)
+raytracer = RayTracer(acoustic_lens, pipeline, transducer, transmission_loss=False, directivity=True)
 
 #%%
 # Delay law related parameters:
@@ -68,9 +68,10 @@ delay_law_focused = tofs_roi[transducer.num_elem // 2, :] - tofs_roi
 #%%
 
 configs = {
+    "surface_echoes": False,
     "gate_end": 70e-6,
     "gate_start": 50e-6,
-    "fs": 32.25e6, # Hz
+    "fs": 64.5e6, # Hz
     "response_type": "s-scan",
     "emission_delaylaw": delay_law_focused,
     "reception_delaylaw": delay_law_focused

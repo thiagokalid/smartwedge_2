@@ -69,9 +69,18 @@ class Simulator:
         self.fmcs = np.zeros(shape=(Nt, Nel, Nel, Nsim), dtype=FLOAT)
 
         for i in prange(Nsim):
-            t_coeff = amplitudes['transmission_loss'][:, i]
-            direct = amplitudes['directivity'][:, i]
-            self.fmcs[..., i] = fmc_sim_kernel(self.tspan, tofs[:, i], t_coeff, direct , Nel, self.raytracer.transducer.fc, self.raytracer.transducer.bw)
+            tx_coeff_i = amplitudes['transmission_loss'][..., i]
+            rx_coeff_i = amplitudes['directivity'][..., i] * amplitudes['transmission_loss'][..., i]
+
+            tofs_i = tofs[..., i]
+            tofs_i = np.tile(tofs_i[:, np.newaxis], reps=(1, Nel))
+
+            self.fmcs[..., i] = fmc_sim_kernel(
+                self.tspan,
+                tofs_i, tofs_i.T,
+                tx_coeff_i, rx_coeff_i,
+                Nel, self.raytracer.transducer.fc, self.raytracer.transducer.bw
+            )
 
 
         if self.surface_echoes:

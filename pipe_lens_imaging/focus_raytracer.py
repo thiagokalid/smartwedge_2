@@ -2,7 +2,7 @@ import numpy as np
 from numpy import ndarray
 from numpy.linalg import norm
 
-from ._raytracer import RayTracer
+from .raytracer_solver import RayTracerSolver
 from pipe_lens.raytracing_utils import snell, uhp, roots_bhaskara
 from pipe_lens_imaging.ultrasound import liquid2solid_t_coeff, far_field_directivity_solid
 
@@ -10,7 +10,7 @@ __all__ = ['FocusRayTracer']
 
 FLOAT = np.float32
 
-class FocusRayTracer(RayTracer):
+class FocusRayTracer(RayTracerSolver):
     def get_tofs(self, solution):
         n_elem = self.transducer.num_elem
         n_focii = len(solution[0]['xlens'])

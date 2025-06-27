@@ -2,7 +2,7 @@ import numpy as np
 
 from numba import prange
 
-from pipe_lens_imaging._raytracer import RayTracer
+from pipe_lens_imaging.raytracer_solver import RayTracerSolver
 from pipe_lens_imaging.simulator_utils import fmc_sim_kernel, fmc2sscan
 
 __all__ = ["Simulator"]
@@ -10,7 +10,7 @@ __all__ = ["Simulator"]
 FLOAT = np.float32
 
 class Simulator:
-    def __init__(self, sim_params: dict, raytracer: RayTracer):
+    def __init__(self, sim_params: dict, raytracer: RayTracerSolver):
         self.raytracer = raytracer
 
         # Reflectors position:

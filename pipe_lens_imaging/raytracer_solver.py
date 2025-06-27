@@ -11,12 +11,12 @@ from pipe_lens_imaging.transducer import Transducer
 
 from pipe_lens_imaging.ultrasound import *
 
-__all__ = ["RayTracer"]
+__all__ = ["RayTracerSolver"]
 
 FLOAT = np.float32
 
 
-class RayTracer(ABC):
+class RayTracerSolver(ABC):
     def __init__(self, acoustic_lens: AcousticLens, pipeline: Pipeline, transducer: Transducer, transmission_loss: bool= False, reflection_loss: bool = False, directivity: bool= False):
         self.transducer = transducer
         self.pipeline = pipeline

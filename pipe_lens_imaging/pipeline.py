@@ -12,8 +12,8 @@ class Pipeline:
         self.x_center = x_center
         self.z_center = z_center
 
-        self.xint, self.zint = circle_cartesian(self.inner_radius)
-        self.xout, self.zout = circle_cartesian(self.outer_radius)
+        self.xint, self.zint = circle_cartesian(self.inner_radius, x_center, z_center)
+        self.xout, self.zout = circle_cartesian(self.outer_radius, x_center, z_center)
 
     def xy_from_alpha(self, alpha: float) -> [float, float]:
         raise NotImplementedError

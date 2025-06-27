@@ -1,4 +1,4 @@
-from numpy import cos, sin, sqrt, pi, arcsin
+from numpy import cos, sin, sqrt, pi, arcsin, linspace
 
 __all__ = ['AcousticLens']
 
@@ -30,6 +30,8 @@ class AcousticLens:
         self.a = (c1/c2)**2 - 1
         self.b = lambda alpha : 2 * d * cos(alpha) - 2 * self.T * c1 ** 2 / c2
         self.c = (c1 * self.T) ** 2 - d ** 2
+
+        self.xlens, self.zlens = self.xy_from_alpha(linspace(-self.alpha_max, self.alpha_max, 1000))
 
     def h(self, alpha):
         """

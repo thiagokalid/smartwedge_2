@@ -32,7 +32,7 @@ class RayTracerSolver(ABC):
         if isinstance(xf, (int, float)) and isinstance(zf, (int, float)):
             xf, zf = np.array([xf]), np.array([zf])
 
-        solution = self.__newton_batch(xf, zf, maxiter)
+        solution = self._newton_batch(xf, zf, maxiter)
 
         return solution
 
@@ -49,7 +49,7 @@ class RayTracerSolver(ABC):
 
     def solve(self, xf, zf, maxiter: int = 6):
         # Find focii TOF:
-        solution = self._newton_batch(xf, zf, maxiter)
+        solution = self._solve(xf, zf, maxiter)
 
         tofs, amplitudes = self.get_tofs(solution)
 

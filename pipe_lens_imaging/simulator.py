@@ -2,7 +2,7 @@ import numpy as np
 
 from numba import prange
 
-from pipe_lens_imaging.raytracer import RayTracer
+from pipe_lens_imaging._raytracer import RayTracer
 from pipe_lens_imaging.simulator_utils import fmc_sim_kernel, fmc2sscan
 
 __all__ = ["Simulator"]

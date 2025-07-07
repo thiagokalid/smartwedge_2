@@ -29,6 +29,10 @@ def liquid2solid_t_coeff(theta_p1, theta_p2, cp1, cp2, cs2, rho1, rho2):
 
     return Tpp, Tsp
 
+def solid2liquid_t_coeff(theta_p1, theta_p2, cp1, cp2, cs2, rho1, rho2):
+    return liquid2solid_t_coeff(theta_p2, theta_p1, cp1, cp2, cs2, rho1, rho2)
+
+
 def solid2solid_t_coeff(theta_p1, theta_p2, cp1, cp2, cs1, cs2, rho1, rho2):
     theta_p1 = abs(theta_p1)
     theta_p2 = abs(theta_p2)
@@ -57,6 +61,26 @@ def solid2solid_t_coeff(theta_p1, theta_p2, cp1, cp2, cs1, cs2, rho1, rho2):
             rho1 * cp1 * delta)  # Equation 6.122a
 
     return Tpp, Tsp
+
+def liquid2solid_r_coeff(theta_p1, theta_p2, cp1, cp2, cs2, rho1, rho2):
+    theta_p1 = abs(theta_p1)
+    theta_p2 = abs(theta_p2)
+
+    # Equation 6.118:
+    theta_s2 = arcsin(cs2 * sin(theta_p2) / cp2)
+
+    # Equation 6.120 from Fundamentals of Ultrasonic (Schmerr 2016)
+    # Delta 1 is analogous with the acoustic impedance Z1:
+    delta1 = cos(theta_p2)
+    # Delta 2 is analogous with the acoustic impedance Z2:
+    delta2 = \
+        (rho2 * cp2 * cos(theta_p1)) / (rho1 * cp1) * (
+                power(cos(2 * theta_s2), 2) + (cs2 ** 2 * sin(2 * theta_s2) * sin(2 * theta_p2)) / (
+                cp2 ** 2)
+        )
+
+
+    return (delta2 - delta1) / (delta2 + delta1)
 
 def sinc(x):
     return sin(x) / x

@@ -18,23 +18,26 @@ def dist(x1, y1, x2, y2):
     return sqrt((x1-x2)**2 + (y1-y2)**2)
 
 @njit(parallel=True)
-def fmc_sim_kernel(tspan: ndarray, tofs: ndarray, t_coeff: ndarray, direct : ndarray, n_elem: int, fc_Hz: float, bw: float) -> ndarray:
+def fmc_sim_kernel(tspan: ndarray, tofs_tx: ndarray, tofs_rx: np.ndarray, tx_losses: ndarray, rx_losses : ndarray, n_elem: int, fc_Hz: float, bw: float) -> ndarray:
     ascan_data = np.zeros(shape=(len(tspan), n_elem, n_elem), dtype=FLOAT)
 
     for combined_idx in prange(n_elem * n_elem):
         idx_e = combined_idx // n_elem
         idx_r = combined_idx % n_elem
-        tof_e = tofs[idx_e]
-        tof_r = tofs[idx_r]
+        tof_e = tofs_tx[idx_e, idx_r]
+        tof_r = tofs_rx[idx_e, idx_r]
 
-        # Ideal gausspulse shifted (spatial impulse simulator):
-        ascan_data[:, idx_e, idx_r] = numba_gausspulse(tspan - (tof_r + tof_e), fc_Hz, bw)
+        if tof_e == -1 or tof_r == -1:
+            continue
+        else:
+            # Ideal gausspulse shifted (spatial impulse simulator):
+            ascan_data[:, idx_e, idx_r] = numba_gausspulse(tspan - (tof_r + tof_e), fc_Hz, bw)
 
-        # Considering amplitude loss due to transmission coefficient (value is equal to 1 if not considered):
-        ascan_data[:, idx_e, idx_r] *= t_coeff[idx_e] * t_coeff[idx_r]
+        # Losses during transmission, i.e., transmission coefficient.
+        ascan_data[:, idx_e, idx_r] *= tx_losses[idx_e, idx_r]
 
-        # Considering amplitude loss due to transmission coefficient (value is equal to 1 if not considered):
-        ascan_data[:, idx_e, idx_r] *= direct[idx_r]
+        # Losses during reception. They might include transmission coefficient, reflection coefficients and directivity.
+        ascan_data[:, idx_e, idx_r] *= rx_losses[idx_e, idx_r]
 
     return ascan_data
 
@@ -54,7 +57,7 @@ def fmc2sscan(fmc_sims: ndarray, shifts_e, shifts_r, n_elem: int):
 
     sscan = np.zeros(shape=(num_samples, num_laws, num_sims), dtype=FLOAT)
     # signal_recepted_by_focus = np.zeros(shape=(num_samples, num_laws, num_sims), dtype=FLOAT)
-    for scan_idx in tqdm(range(num_laws)): #
+    for scan_idx in range(num_laws): #
         # Delay And Sum in emission:
         shift_e = shifts_e[:, scan_idx]
         rolled_fmc = np.zeros_like(fmc_sims)

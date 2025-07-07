@@ -201,7 +201,7 @@ def pointlist_to_cloud(points, steps, orient_tangent=False, xlen=None, radius_to
 
         else:  # Top deve ter as normais invertidas para apontar para cima
             pcdtop.normals = o3d.utility.Vector3dVector(-(np.asarray(pcdtop.normals)))
-    pcdtop.orient_normals_to_align_with_direction(np.array([0, 0, 1]))
+        pcdtop.orient_normals_to_align_with_direction(np.array([0, 0, 1]))
 
     pcdbot = o3d.geometry.PointCloud()
     if surfbot:
@@ -222,7 +222,7 @@ def pointlist_to_cloud(points, steps, orient_tangent=False, xlen=None, radius_to
         else:
             pcdbot.normals = o3d.utility.Vector3dVector((np.asarray(pcdbot.normals)))
 
-    pcdbot.orient_normals_to_align_with_direction(np.array([0, 0, -1]))
+        pcdbot.orient_normals_to_align_with_direction(np.array([0, 0, -1]))
 
     pcdf1 = o3d.geometry.PointCloud()
     if pfac1:
@@ -233,6 +233,8 @@ def pointlist_to_cloud(points, steps, orient_tangent=False, xlen=None, radius_to
         # pcdf1.normals = o3d.utility.Vector3dVector(-np.asarray(pcdf1.normals)) # Face frontal deve apontar para fora da tela
         pcdf1.normals = o3d.utility.Vector3dVector(np.tile((np.asarray([0, -1, 0])),
                                                            [np.asarray(pcdf1.normals).shape[0], 1]))
+        pcdf1.orient_normals_to_align_with_direction(np.array([0, -1, 0]))
+
 
     pcdf2 = o3d.geometry.PointCloud()
     if pfac2:
@@ -243,6 +245,8 @@ def pointlist_to_cloud(points, steps, orient_tangent=False, xlen=None, radius_to
         # pcdf2.normals = o3d.utility.Vector3dVector(np.asarray(pcdf2.normals)) # Face traseira deve apontar para dentro da tela
         pcdf2.normals = o3d.utility.Vector3dVector(np.tile((np.asarray([0, 1, 0])),
                                                            [np.asarray(pcdf2.normals).shape[0], 1]))
+        pcdf2.orient_normals_to_align_with_direction(np.array([0, 1, 0]))
+
 
     pcds1 = o3d.geometry.PointCloud()
     if psid1:

@@ -76,8 +76,8 @@ class FocusRayTracer(RayTracerSolver):
         b_line = ylens - a_line * xlens
 
         a = a_line**2 + 1
-        b = 2 * a_line * b_line - 2 * (self.pipeline.x_center + a_line * self.pipeline.z_center)
-        c = b_line**2 + self.pipeline.x_center**2 + self.pipeline.z_center**2 - 2 * self.pipeline.z_center * b_line - self.pipeline.outer_radius**2
+        b = 2 * a_line * b_line - 2 * (self.pipeline.xcenter + a_line * self.pipeline.zcenter)
+        c = b_line ** 2 + self.pipeline.xcenter ** 2 + self.pipeline.zcenter ** 2 - 2 * self.pipeline.zcenter * b_line - self.pipeline.outer_radius ** 2
 
         xcirc1, xcirc2 = roots_bhaskara(a, b, c)
         ycirc1, ycirc2 = a_line * xcirc1 + b_line, a_line * xcirc2 + b_line

@@ -2,11 +2,11 @@ import numpy as np
 import matplotlib
 from matplotlib import pyplot as plt
 from pipe_lens_imaging.acoustic_lens import AcousticLens
+from pipe_lens_imaging.focus_raytracer import FocusRayTracer
 from pipe_lens_imaging.pipeline import Pipeline
 from pipe_lens.transducer import Transducer
 from numpy import pi, sin, cos
 import matplotlib.ticker as ticker
-from pipe_lens_imaging.reflection_raytracer import ReflectionRayTracer
 #
 from pipe_lens_imaging.simulator import Simulator
 
@@ -47,20 +47,22 @@ radius = 139.82e-3/2
 wall_width = 16.23e-3
 inner_radius = (radius - wall_width)
 c3 = 5900
-pipeline = Pipeline(radius, wall_width, c3, rho_steel)
+pipeline = Pipeline(radius, wall_width, c3, rho_steel, xcenter=-5e-3, zcenter=-5e-3)
 
 # Ultrasound phased array transducer specs:
 transducer = Transducer(pitch=.5e-3, bw=.4, num_elem=64, fc=5e6)
 transducer.zt += acoustic_lens.d
 
 # Raytracer engine to find time of flight between emitter and focus:
-raytracer = ReflectionRayTracer(acoustic_lens, pipeline, transducer, transmission_loss=False, directivity=True)
+raytracer = FocusRayTracer(acoustic_lens, pipeline, transducer, transmission_loss=False, directivity=True)
 
 arg = (
     0,
     inner_radius + 10e-3,
 )
-arg = rotate_point(arg, np.pi/6)
+arg = rotate_point(arg, theta_rad=0)
+
+arg = (arg[0] + pipeline.xcenter, arg[1] + pipeline.zcenter)
 
 tofs, amps = raytracer.solve(*arg)
 
@@ -74,7 +76,15 @@ xlens, zlens = extract_pts(sol, 'xlens'), extract_pts(sol, 'zlens')
 xpipe, zpipe = extract_pts(sol, 'xpipe'), extract_pts(sol, 'zpipe')
 xf, zf = arg
 
+#%% Debug plots:
 
+firing_angles = extract_pts(sol, 'firing_angle')
+pipe_incidence_angles = extract_pts(sol, 'interface_23')
+
+plt.figure(figsize=(8,4))
+plt.plot(np.arange(transducer.num_elem), np.degrees(pipe_incidence_angles[0::2]), 'o')
+plt.grid()
+plt.show()
 #%%
 plt.figure(figsize=(5, 7))
 plt.title("Case A: Focusing on point inside the pipe wall.")

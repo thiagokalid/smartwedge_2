@@ -29,6 +29,10 @@ def liquid2solid_t_coeff(theta_p1, theta_p2, cp1, cp2, cs2, rho1, rho2):
 
     return Tpp, Tsp
 
+def solid2liquid_t_coeff(theta_p1, theta_p2, cp1, cp2, cs2, rho1, rho2):
+    return liquid2solid_t_coeff(theta_p2, theta_p1, cp1, cp2, cs2, rho1, rho2)
+
+
 def solid2solid_t_coeff(theta_p1, theta_p2, cp1, cp2, cs1, cs2, rho1, rho2):
     theta_p1 = abs(theta_p1)
     theta_p2 = abs(theta_p2)

@@ -123,7 +123,7 @@ class RayTracerSolver(ABC):
 
         for i, (x_target, y_target) in enumerate(zip(xf, yf)):
             # Compute distances for the coarse grid
-            dic_coarse_distances = self._distalpha(
+            dic_coarse_distances = self._dist_kernel(
                 xc, yc,
                 x_target * np.ones_like(alpha_grid_coarse),
                 y_target * np.ones_like(alpha_grid_coarse),
@@ -138,7 +138,7 @@ class RayTracerSolver(ABC):
             alpha_fine_subset = alpha_grid_fine[fine_start_idx:fine_end_idx]
 
             # Compute distances on the fine grid subset
-            fine_distances = self._distalpha(
+            fine_distances = self._dist_kernel(
                 xc, yc,
                 x_target * np.ones_like(alpha_fine_subset),
                 y_target * np.ones_like(alpha_fine_subset),
@@ -149,7 +149,7 @@ class RayTracerSolver(ABC):
             alphaa[i] = alpha_fine_subset[np.nanargmin(fine_distances['dist'])]
 
         # Final evaluation with all optimal alphas
-        final_results = self._distalpha(xc, yc, xf, yf, alphaa)
+        final_results = self._dist_kernel(xc, yc, xf, yf, alphaa)
         final_results['firing_angle'] = alphaa
         # Set distances above tolerance to NaN
         final_results['dist'][final_results['dist'] >= tol] = np.nan
@@ -215,7 +215,7 @@ class RayTracerSolver(ABC):
         alphaa = np.zeros(N)
 
         for jj in range(N):
-            cost_fun_i = lambda x, idx=jj: self._distalpha(
+            cost_fun_i = lambda x, idx=jj: self._dist_kernel(
                 xc, yc, xf[idx:idx + 1], yf[idx:idx + 1], alpha=np.array([x])
             )['dist'][0]
 
@@ -230,7 +230,7 @@ class RayTracerSolver(ABC):
             alphaa[jj] = res.x if res.fun <= tol else np.nan
 
         # Evaluate final distances with best alphas
-        dic = self._distalpha(xc, yc, xf, yf, alpha=alphaa)
+        dic = self._dist_kernel(xc, yc, xf, yf, alpha=alphaa)
 
         # Compute max and min distances
         dist_array = dic['dist']
@@ -243,17 +243,17 @@ class RayTracerSolver(ABC):
     def _dist_and_derivatives(self, xc: float, yc: float, xf: ndarray, yf: ndarray, acurve: ndarray, eps: float = 1e-5):
         '''Computes the squared distance using distalpha as well as the first and
       second derivatives of the squared distance with relation to alpha.'''
-        dm = self._distalpha(xc, yc, xf, yf, acurve - eps)['dist']
-        dic = self._distalpha(xc, yc, xf, yf, acurve)
+        dm = self._dist_kernel(xc, yc, xf, yf, acurve - eps)['dist']
+        dic = self._dist_kernel(xc, yc, xf, yf, acurve)
         d0 = dic['dist']
-        dp = self._distalpha(xc, yc, xf, yf, acurve + eps)['dist']
+        dp = self._dist_kernel(xc, yc, xf, yf, acurve + eps)['dist']
         der1 = (dp - dm) * .5 / eps
         der2 = (dm - 2 * d0 + dp) / eps ** 2
         return dic, der1, der2
 
     ##### Case-specific:
     @abstractmethod
-    def _distalpha(self, xc: float, zc: float, xf: ndarray, yf: ndarray, acurve: ndarray):
+    def _dist_kernel(self, xc: float, zc: float, xf: ndarray, yf: ndarray, acurve: ndarray):
         pass
 
     @abstractmethod

@@ -64,7 +64,7 @@ class FocusRayTracer(RayTracerSolver):
         tofs = d1 / c1 + d2 / c2 + d3 / c3
         return tofs, amplitudes
 
-    def _distalpha(self, xc: float, zc: float, xf: ndarray, yf: ndarray, acurve: float):
+    def _dist_kernel(self, xc: float, zc: float, xf: ndarray, yf: ndarray, acurve: float):
         c1, c2, c3 = self.get_speeds()
 
         xlens, ylens = self.acoustic_lens.xy_from_alpha(acurve)

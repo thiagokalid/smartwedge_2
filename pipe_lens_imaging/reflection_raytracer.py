@@ -88,7 +88,7 @@ class ReflectionRayTracer(RayTracerSolver):
 
         return tofs, amplitudes
 
-    def _distalpha(self, xa: float, za: float, xf: ndarray, zf: ndarray, alpha: np.ndarray, plot=False):
+    def _dist_kernel(self, xa: float, za: float, xf: ndarray, zf: ndarray, alpha: np.ndarray, plot=False):
         c1, c2, c3 = self.get_speeds()
 
         x_p, z_p = self.acoustic_lens.xy_from_alpha(alpha)

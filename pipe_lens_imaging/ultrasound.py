@@ -1,5 +1,15 @@
-from numpy import cos, sin, abs, arcsin, power, pi
 import numpy as np
+from numpy import cos, sin, abs, arcsin, power, pi
+
+__all__ = [
+    "liquid2solid_t_coeff",
+    "solid2liquid_t_coeff",
+    "solid2solid_t_coeff",
+    "liquid2solid_r_coeff",
+    "sinc",
+    "far_field_directivity",
+    "far_field_directivity_solid"
+]
 
 def liquid2solid_t_coeff(theta_p1, theta_p2, cp1, cp2, cs2, rho1, rho2):
     theta_p1 = abs(theta_p1)
@@ -31,7 +41,6 @@ def liquid2solid_t_coeff(theta_p1, theta_p2, cp1, cp2, cs2, rho1, rho2):
 
 def solid2liquid_t_coeff(theta_p1, theta_p2, cp1, cp2, cs2, rho1, rho2):
     return liquid2solid_t_coeff(theta_p2, theta_p1, cp1, cp2, cs2, rho1, rho2)
-
 
 def solid2solid_t_coeff(theta_p1, theta_p2, cp1, cp2, cs1, cs2, rho1, rho2):
     theta_p1 = abs(theta_p1)
@@ -79,7 +88,6 @@ def liquid2solid_r_coeff(theta_p1, theta_p2, cp1, cp2, cs2, rho1, rho2):
                 cp2 ** 2)
         )
 
-
     return (delta2 - delta1) / (delta2 + delta1)
 
 def sinc(x):
@@ -97,21 +105,4 @@ def __far_field_directivity_solid(theta, cl, cs, k):
 def far_field_directivity_solid(theta, cl, cs, k, a):
     Dl = __far_field_directivity_solid(theta, cl, cs, k)
     Df = far_field_directivity(k, a, theta)
-
     return Df * Dl
-
-
-
-# if False:
-#     import matplotlib
-#     matplotlib.use("TkAgg")
-#     import matplotlib.pyplot as plt
-#     x = np.complex64(np.radians(np.arange(0, 90)))
-#
-#     plt.plot(np.degrees(x), far_field_directivity_solid(x, 6300, 6300/2, k, a))
-#     plt.show()
-#
-#
-#     D = lambda theta: ((2) ** 2 - 2 * sin(theta) ** 2) * cos(theta) / (F0(np.complex64(sin(theta))))
-#     plt.plot(x * 180/pi, D(x))
-#     plt.show()

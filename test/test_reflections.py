@@ -25,10 +25,11 @@ plt.rcParams.update({
 })
 
 #
-chosen_angle_grid = [0, 10, 20, 30]
-# zcenter_grid = [-11e-3]
+# chosen_angle_grid = [0, 10, 20, 30]
+chosen_angle_grid = [30]
+zcenter_grid = [-11e-3]
 z_step = 2.5/4
-zcenter_grid = np.arange(-10, 10 + z_step, z_step) * 1e-3
+# zcenter_grid = np.arange(-10, 10 + z_step, z_step) * 1e-3
 # zcenter_grid = [10e-3]
 residual_thickness_matrix = np.zeros((len(chosen_angle_grid), len(zcenter_grid)))
 
@@ -165,7 +166,7 @@ for _aa, chosen_angle in enumerate(tqdm(chosen_angle_grid)):
         t_max_per_column = sim1.tspan[max_per_column]
         plt.plot(np.degrees(alpha_span), t_max_per_column * 1e6, color='magenta')
         plt.tight_layout()
-        plt.savefig("sscan_surface.png", dpi=300)
+        plt.savefig("../figures/sscan_surface.png", dpi=300)
         plt.show()
 
         #%%
@@ -199,7 +200,7 @@ for _aa, chosen_angle in enumerate(tqdm(chosen_angle_grid)):
         plt.ylabel(r"time-axis / ($\mathrm{\mu s}$)")
         plt.xticks(np.arange(-45, 45 + 15, 15))
         plt.tight_layout()
-        plt.savefig("sscan_flaw.png", dpi=300)
+        plt.savefig("../figures/sscan_flaw.png", dpi=300)
 
         #%% Residual thickness:
 
@@ -210,19 +211,21 @@ for _aa, chosen_angle in enumerate(tqdm(chosen_angle_grid)):
 
 
 #%%
-plt.figure(figsize=(7,3.4))
 
-for i, ang in enumerate(chosen_angle_grid):
-    plt.plot(zcenter_grid * 1e3, residual_thickness_matrix[i, :], 'o--', label=f"SDH at ${ang:.1f}^\circ$.")
+if len(zcenter_grid) != 0 or len(chosen_angle_grid) != 0:
+    plt.figure(figsize=(7,3.4))
 
-zgrid = np.arange(zcenter_grid[0] - 15e-3, zcenter_grid[-1] + 15e-3, 1e-3)
-plt.plot(zgrid * 1e3, 8.99 * np.ones_like(zgrid), 'k--', label="Ideal")
-plt.xlabel("Tube center shift along z-axis / (mm)")
-plt.ylabel("Residual thickness / (mm)")
-plt.xlim([zcenter_grid[0] * 1e3 - 2.5, zcenter_grid[-1] * 1e3 + 2.5] )
-plt.ylim([7, 10])
-plt.grid()
-plt.legend()
-plt.tight_layout()
-plt.savefig("zshift_influence.png", dpi=300)
-plt.show()
+    for i, ang in enumerate(chosen_angle_grid):
+        plt.plot(zcenter_grid * 1e3, residual_thickness_matrix[i, :], 'o--', label=f"SDH at ${ang:.1f}^\circ$.")
+
+    zgrid = np.arange(zcenter_grid[0] - 15e-3, zcenter_grid[-1] + 15e-3, 1e-3)
+    plt.plot(zgrid * 1e3, 8.99 * np.ones_like(zgrid), 'k--', label="Ideal")
+    plt.xlabel("Tube center shift along z-axis / (mm)")
+    plt.ylabel("Residual thickness / (mm)")
+    plt.xlim([zcenter_grid[0] * 1e3 - 2.5, zcenter_grid[-1] * 1e3 + 2.5] )
+    plt.ylim([7, 10])
+    plt.grid()
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig("../figures/zshift_influence.png", dpi=300)
+    plt.show()

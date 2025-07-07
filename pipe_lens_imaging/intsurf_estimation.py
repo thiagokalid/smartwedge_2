@@ -1,6 +1,8 @@
 import numpy as np
 from scipy.signal import find_peaks
 
+__all__ = ['img_line_first_echoes']
+
 def img_line_first_echoes(img, threshold=0.5, height = 0.005):
 
     if isinstance(height, float):

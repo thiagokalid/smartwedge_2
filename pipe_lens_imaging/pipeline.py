@@ -1,6 +1,7 @@
 from numpy import sqrt
-
 from pipe_lens_imaging.geometric_utils import circle_cartesian
+
+__all__ = ["Pipeline"]
 
 class Pipeline:
     def __init__(self, outer_radius: float, wall_thickness: float, c: float, rho: float, xcenter: float = 0., zcenter: float = 0.):

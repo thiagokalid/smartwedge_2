@@ -2,9 +2,9 @@ import numpy as np
 from numpy import ndarray
 from numpy.linalg import norm
 
-from .raytracer_solver import RayTracerSolver
-from pipe_lens.raytracing_utils import snell, uhp, roots_bhaskara
-from pipe_lens_imaging.ultrasound import liquid2solid_t_coeff, far_field_directivity_solid
+from pipe_lens_imaging.raytracer_utils import roots_bhaskara, snell, uhp
+from pipe_lens_imaging.ultrasound import far_field_directivity_solid, liquid2solid_t_coeff
+from pipe_lens_imaging.raytracer_solver import RayTracerSolver
 
 __all__ = ['FocusRayTracer']
 

@@ -1,8 +1,8 @@
 import numpy as np
 import numba
-
-from .pwi_tfm_utils import *
 import time
+
+from pipe_lens_imaging.pwi_tfm_utils import *
 
 def cpwc_circle_kernel(pwi_data, xroi, zroi, xt, zt, xcenter, zcenter, radius, thickness, thetas, c_coupling, c_specimen, fs, gate_start=0, insideMaterialMask=True, spatialWeightingMask=True, verbose=True):
     Nrows, Ncols = zroi.shape[0], zroi.shape[1]

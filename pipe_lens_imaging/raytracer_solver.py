@@ -1,18 +1,13 @@
-from typing import Any
-
 import numpy as np
-
 from numpy import ndarray, pi
-from numpy.linalg import norm
 from abc import ABC, abstractmethod
+from bisect import bisect
+from scipy.optimize import minimize_scalar
 
 from pipe_lens.raytracing_utils import uhp, roots_bhaskara, snell
 from pipe_lens_imaging.acoustic_lens import AcousticLens
 from pipe_lens_imaging.pipeline import Pipeline
 from pipe_lens_imaging.transducer import Transducer
-from bisect import bisect
-from scipy.optimize import minimize_scalar
-
 from pipe_lens_imaging.ultrasound import *
 
 __all__ = ["RayTracerSolver"]

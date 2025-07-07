@@ -1,14 +1,18 @@
 import numpy as np
 from numpy import ndarray
-from numpy.linalg import norm
 
-from .raytracer_solver import RayTracerSolver
-from pipe_lens.raytracing_utils import refraction, reflection, roots_bhaskara
-from pipe_lens_imaging.ultrasound import liquid2solid_t_coeff, far_field_directivity_solid, solid2liquid_t_coeff, \
-    liquid2solid_r_coeff
 import matplotlib.pyplot as plt
-from .raytracer_utils import plot_setup, plot_line, plot_normal
-from .geometric_utils import findIntesectionBetweenCurveAndLine, findIntersectionBetweenAcousticLensAndRay
+
+from pipe_lens.raytracing_utils import refraction, reflection, roots_bhaskara
+from pipe_lens_imaging.geometric_utils import findIntersectionBetweenAcousticLensAndRay
+from pipe_lens_imaging.raytracer_solver import RayTracerSolver
+from pipe_lens_imaging.raytracer_utils import plot_setup
+from pipe_lens_imaging.ultrasound import (
+    far_field_directivity_solid,
+    liquid2solid_r_coeff,
+    liquid2solid_t_coeff,
+    solid2liquid_t_coeff,
+)
 
 __all__ = ['ReflectionRayTracer']
 
@@ -129,10 +133,6 @@ class ReflectionRayTracer(RayTracerSolver):
         a_l = np.tan(phi_l)
         b_l = z_q - a_l * x_q
 
-        # alpha_intersection = self.acoustic_lens.findIntersectionWithLine(a_l, b_l, alpha_0=alpha)
-        # intersection_x, intersection_z = self.acoustic_lens.xy_from_alpha(alpha_intersection)
-
-        # intersection_x, intersection_z = findIntesectionBetweenCurveAndLine(a_l, b_l, x_q, self.acoustic_lens.xlens, self.acoustic_lens.zlens)
         alpha_mins = findIntersectionBetweenAcousticLensAndRay(a_l, b_l, self.acoustic_lens)
         intersection_x, intersection_z = self.acoustic_lens.xy_from_alpha(alpha_mins)
 

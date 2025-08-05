@@ -49,7 +49,7 @@ transducer = Transducer(pitch=.5e-3, bw=.4, num_elem=64, fc=5e6)
 transducer.zt += acoustic_lens.d
 
 # Raytracer engine to find time of flight between emitter and focus:
-raytracer = FocusRayTracer(acoustic_lens, pipeline, transducer, transmission_loss=False, directivity=True)
+raytracer = FocusRayTracer(acoustic_lens, pipeline, transducer, transmission_loss=True, directivity=True)
 
 #%%
 # Delay law related parameters:
@@ -82,7 +82,7 @@ idxs = [np.where(np.abs(np.degrees(focus_angle) - float(chosen_angle[i])) < 1e-6
 x_reflector, z_reflector = xf[idxs], zf[idxs]
 
 
-sim = Simulator(configs, raytracer)
+sim = Simulator(configs, [raytracer])
 sim.add_reflector(x_reflector, z_reflector, different_instances=True)
 sscans = sim.get_response()
 
@@ -113,7 +113,7 @@ for i in range(len(idxs)):
 
     # plt.imshow(sscans_log[0], extent=[np.rad2deg(alpha_min), np.rad2deg(alpha_max), sim.tspan[-1] * 1e6, sim.tspan[0] * 1e6],
     #            aspect='auto', interpolation='none', vmin=-6, vmax=0, cmap='jet')
-    im = plt.imshow(sscans_envelope[i] / 1500,
+    im = plt.imshow(sscans_envelope[i] / 60,
                     extent=[np.rad2deg(alpha_min), np.rad2deg(alpha_max), sim.tspan[-1] * 1e6, sim.tspan[0] * 1e6],
                     aspect='auto', interpolation='none', vmin=0, vmax=1, cmap='jet')
 

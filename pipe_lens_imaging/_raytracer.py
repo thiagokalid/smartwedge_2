@@ -1,15 +1,11 @@
 import numpy as np
 
-from numpy import ndarray, pi
-from numpy.linalg import norm
+from numpy import ndarray
 from abc import ABC, abstractmethod
 
-from pipe_lens.raytracing_utils import uhp, roots_bhaskara, snell, snell2
 from pipe_lens_imaging.acoustic_lens import AcousticLens
 from pipe_lens_imaging.pipeline import Pipeline
 from pipe_lens_imaging.transducer import Transducer
-
-from pipe_lens_imaging.ultrasound import *
 
 __all__ = ["RayTracer"]
 

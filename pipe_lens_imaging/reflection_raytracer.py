@@ -3,15 +3,15 @@ from numpy import ndarray
 
 import matplotlib.pyplot as plt
 
-from pipe_lens.raytracing_utils import refraction, reflection, roots_bhaskara
+from pipe_lens_imaging.raytracing_utils import refraction, reflection, roots_bhaskara
 from pipe_lens_imaging.geometric_utils import findIntersectionBetweenAcousticLensAndRay
 from pipe_lens_imaging.raytracer_solver import RayTracerSolver
 from pipe_lens_imaging.raytracer_utils import plot_setup
 from pipe_lens_imaging.ultrasound import (
     far_field_directivity_solid,
-    liquid2solid_r_coeff,
-    liquid2solid_t_coeff,
-    solid2liquid_t_coeff,
+    fluid2solid_r_coeff,
+    fluid2solid_t_coeff,
+    solid2fluid_t_coeff,
 )
 
 __all__ = ['ReflectionRayTracer']
@@ -58,26 +58,26 @@ class ReflectionRayTracer(RayTracerSolver):
             # Extract the amplitudes:
             for rx in range(self.transducer.num_elem):
                 if self.transmission_loss:
-                    Tpp_12, _ = solid2liquid_t_coeff(
+                    Tpp_12, _ = solid2fluid_t_coeff(
                             solution[tx]['interface_12'][0][rx], solution[tx]['interface_12'][1][rx],
-                            c1, c2, c1 / 2,
+                            c1, c2, c1/2,
                             self.acoustic_lens.rho1, self.acoustic_lens.rho2
                         )
 
 
-                    Tpp_r = liquid2solid_r_coeff(
+                    Rpp_23 = fluid2solid_r_coeff(
                         solution[tx]['interface_23'][0][rx], solution[tx]['interface_23'][1][rx],
                         c2, c3, c3/2,
                         self.acoustic_lens.rho2, self.pipeline.rho
                     )
 
-                    Tpp_21, _ = liquid2solid_t_coeff(
+                    Tpp_21, _ = fluid2solid_t_coeff(
                         solution[tx]['interface_21'][0][rx], solution[tx]['interface_21'][1][rx],
                         c2, c1, c1/2,
-                        self.acoustic_lens.rho1, self.acoustic_lens.rho2
+                        self.acoustic_lens.rho2, self.acoustic_lens.rho1
                     )
 
-                    amplitudes['transmission_loss'][tx, rx, 0] = Tpp_12 * Tpp_r * Tpp_21
+                    amplitudes['transmission_loss'][tx, rx, 0] = Tpp_12 * Rpp_23 * Tpp_21
 
                 elif self.directivity:
                     deltax = self.transducer.xt[rx] - solution[tx]["zlens2"][rx]

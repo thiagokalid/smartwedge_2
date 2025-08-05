@@ -3,7 +3,7 @@ from numpy import ndarray
 from numpy.linalg import norm
 
 from pipe_lens_imaging.raytracer_utils import roots_bhaskara, snell, uhp
-from pipe_lens_imaging.ultrasound import far_field_directivity_solid, liquid2solid_t_coeff
+from pipe_lens_imaging.ultrasound import far_field_directivity_solid, fluid2solid_t_coeff, solid2fluid_t_coeff
 from pipe_lens_imaging.raytracer_solver import RayTracerSolver
 
 __all__ = ['FocusRayTracer']
@@ -35,15 +35,15 @@ class FocusRayTracer(RayTracerSolver):
             coords_outer[j, 0, i], coords_outer[j, 1, i] = solution[j]['xpipe'][i], solution[j]['zpipe'][i]
 
             if self.transmission_loss:
-                Tpp_12, _ = liquid2solid_t_coeff(
+                Tpp_12, _ = solid2fluid_t_coeff(
                     solution[j]['interface_12'][0][i], solution[j]['interface_12'][1][i],
                     c1, c2, c1/2,
                     self.acoustic_lens.rho1, self.acoustic_lens.rho2
                 )
-                Tpp_23, _ = liquid2solid_t_coeff(
+                Tpp_23, _ = fluid2solid_t_coeff(
                     solution[j]['interface_23'][1][i], solution[j]['interface_23'][0][i],
-                    c3, c2, c3/2,
-                    self.pipeline.rho, self.acoustic_lens.rho2
+                    c2, c3, c3/2,
+                    self.acoustic_lens.rho2, self.pipeline.rho
                 )
                 amplitudes["transmission_loss"][j, :, i] *= Tpp_12 * Tpp_23
 

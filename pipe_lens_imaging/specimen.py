@@ -66,7 +66,7 @@ class GenericSpecimen:
 
     def draw(self, coord_system="cartesian", axis=plt.gca(), show=False, configs:dict = {''}, scale=1):
         self.plot_surface(coord_system, axis, configs, scale=scale)
-        axis.set_aspect('equal')
+        # axis.set_aspect('equal')
         if show:
             plt.show()
 

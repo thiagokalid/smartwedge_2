@@ -1,11 +1,4 @@
 from numpy import sqrt
-from numpy import ndarray
-from pipe_lens.acoustic_lens import AcousticLens
-
-from pipe_lens.raytracer import RayTracer
-
-from tqdm import tqdm
-
 from numba import njit, prange
 import numpy as np
 

@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import numpy as np
 
 __all__ = ["apply_operation_to_coord_dict", "adjust_the_phase_wrap", "phase_wrap_dict", "cart2polar_coord_dict",

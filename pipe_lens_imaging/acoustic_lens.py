@@ -1,5 +1,5 @@
 import numpy as  np
-from numpy import cos, sin, sqrt, pi, arcsin, linspace, abs
+from numpy import cos, sin, sqrt, pi, arcsin, linspace
 
 __all__ = ['AcousticLens']
 

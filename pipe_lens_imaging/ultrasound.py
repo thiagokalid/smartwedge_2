@@ -4,11 +4,14 @@ from numpy import cos, sin, abs, arcsin, power
 __all__ = [
     "fluid2solid_t_coeff",
     "solid2fluid_t_coeff",
-    "solid2solid_t_coeff",
+    "solid2solid_tr_coeff",
     "fluid2solid_r_coeff",
     "sinc",
     "far_field_directivity",
-    "far_field_directivity_solid"
+    "far_field_directivity_solid",
+    "compute_cl_water",
+    "compute_cl_steel",
+    "compute_cl_aluminum"
 ]
 
 def fluid2solid_t_coeff(theta_p1, theta_p2, cp1_fluid, cp2_solid, cs2_solid, rho1_fluid, rho2_solid):
@@ -37,20 +40,16 @@ def fluid2solid_t_coeff(theta_p1, theta_p2, cp1_fluid, cp2_solid, cs2_solid, rho
     Tsp = (4 * rho2_solid * cs2_solid * cos(theta_p1) * cos(theta_p2) * sin(theta_s2)) / (
             rho1_fluid * cp1_fluid * delta)  # Equation 6.122a
 
-    return Tpp, Tsp
+    return np.abs(Tpp), np.abs(Tsp)
 
-def solid2fluid_t_coeff(theta_p1, theta_p2, cp1_solid, cs1_solid, cp2_fluid, rho1_solid, rho2_fluid):
+def solid2fluid_t_coeff(theta_p1, theta_p2, cp1_solid, cp2_fluid, cs1_solid, rho1_solid, rho2_fluid):
     # Compute the transmission coefficient as if the propagation direction was reversed:
     Tpp_reversed, Tsp_reversed = fluid2solid_t_coeff(theta_p2, theta_p1, cp2_fluid, cp1_solid, cs1_solid, rho2_fluid, rho1_solid)
 
-    # Compute the shear-wave incidence angle:
-    theta_s1 = arcsin(cs1_solid * sin(theta_p1) / cp1_solid)
-
     # Compute the true coefficients through Stoke's relation. See 6.150a (Schmerr, 2016).
     Tpp = Tpp_reversed * (rho2_fluid * cp2_fluid * np.cos(theta_p1)) / (rho1_solid * cp1_solid * np.cos(theta_p2))
-    Tps = Tsp_reversed * (rho2_fluid * cp2_fluid * np.cos(theta_s1)) / (rho1_solid * cp1_solid * np.cos(theta_p2))
 
-    return Tpp, Tps
+    return Tpp
 
 def solid2solid_r_coeff(theta_p1, theta_p2, cp1, cp2, cs1, cs2, rho1, rho2):
     """
@@ -93,7 +92,7 @@ def solid2solid_r_coeff(theta_p1, theta_p2, cp1, cp2, cs1, cs2, rho1, rho2):
 
     return Rpp
 
-def solid2solid_t_coeff(theta_p1, theta_p2, cp1, cp2, cs1, cs2, rho1, rho2):
+def solid2solid_tr_coeff(theta_p1, theta_p2, cp1, cp2, cs1, cs2, rho1, rho2):
     """
     Calculates the transmission and reflection coefficients for a solid-solid interface (P-wave incidence).
     Returns Tpp (P-to-P transmission)
@@ -103,27 +102,25 @@ def solid2solid_t_coeff(theta_p1, theta_p2, cp1, cp2, cs1, cs2, rho1, rho2):
 
     # Snell's Law to find shear angles
     theta_s1 = arcsin(cs1 * sin(theta_p1) / cp1)
-    theta_s2 = arcsin(cs2 * sin(theta_p1) / cp1)
+    theta_s2 = arcsin(cs2 * sin(theta_p2) / cp2)
 
     # Intermediate terms from Eqs. (6.162) and (6.163)
     d1 = (cs1 / cp1) * sin(2 * theta_s1) * sin(theta_p1) + cos(2 * theta_s1) * cos(theta_s1)
     d2 = (cs1 / cp1) * sin(2 * theta_p1) * sin(theta_s1) + cos(2 * theta_s1) * cos(theta_p1)
 
     l1 = (cs1 / cp2) * sin(2 * theta_s1) * sin(theta_p2) + (rho2 / rho1) * cos(2 * theta_s2) * cos(theta_s1)
-    m1 = -(cs1 / cs2) * sin(2 * theta_s1) * cos(theta_s2) - (rho2 / rho1) * sin(2 * theta_s2) * cos(theta_s1)
+    m1 = (cs1 / cs2) * sin(2 * theta_s1) * cos(theta_s2) - (rho2 / rho1) * sin(2 * theta_s2) * cos(theta_s1)
     l2 = (cs1 / cp2) * cos(2 * theta_s1) * sin(theta_p2) - (rho2 / rho1) * cos(2 * theta_s2) * sin(theta_s1)
     m2 = (cs1 / cs2) * cos(2 * theta_s1) * cos(theta_s2) + (rho2 / rho1) * sin(2 * theta_s2) * sin(theta_s1)
-    l3 = -(cp1 / cp2) * cos(2 * theta_s1) * cos(theta_p2) + (rho2 * cs2 ** 2) / (rho1 * cp1 * cp2) * sin(
+    l3 = (cp1 / cp2) * cos(2 * theta_s1) * cos(theta_p2) + (rho2 * cs2 ** 2) / (rho1 * cp2**2) * sin(
         2 * theta_p2) * sin(theta_p1)
-    m3 = -(cp1 / cs2) * cos(2 * theta_s1) * sin(theta_s2) + (rho2 * cs2 ** 2) / (rho1 * cp1 * cs2) * cos(
-        2 * theta_s2) * sin(theta_p1)
-    l4 = -(cs1 ** 2) / (cp1 * cp2) * sin(2 * theta_p1) * cos(theta_p2) - (rho2 * cs2 ** 2) / (rho1 * cp1 * cp2) * sin(
+    m3 = -(cp1 / cs2) * cos(2 * theta_s1) * sin(theta_s2) + rho2 / rho1 * cos(2 * theta_s2) * sin(theta_p1)
+    l4 = -(cs1 ** 2) / (cp1 * cp2) * sin(2 * theta_p1) * cos(theta_p2) + (rho2 * cs2 ** 2) / (rho1 * cp2**2) * sin(
         2 * theta_p2) * cos(theta_p1)
-    m4 = (cs1 ** 2) / (cp1 * cs2) * sin(2 * theta_p1) * sin(theta_s2) - (rho2 * cs2 ** 2) / (rho1 * cp1 * cs2) * cos(
-        2 * theta_s2) * cos(theta_p1)
+    m4 = (cs1 ** 2) / (cp1 * cs2) * sin(2 * theta_p1) * sin(theta_s2) + rho2 / rho1 * cos(2 * theta_s2) * cos(theta_p1)
 
     # Denominator from Eq. (6.166)
-    delta = (l2 / d1 + l4 / d2) * (m1 / d1 - m3 / d2) - (l1 / d1 - l3 / d2) * (m2 / d1 - m4 / d2)
+    delta = (l2 / d1 + l4 / d2) * (m1 / d1 + m3 / d2) - (l1 / d1 + l3 / d2) * (m2 / d1 + m4 / d2)
 
     #
     delta1 = cs1/cp1 * np.sin(2 * theta_s1) * np.sin(theta_p1) + np.cos(2 * theta_s1) * np.cos(theta_s1)
@@ -132,10 +129,16 @@ def solid2solid_t_coeff(theta_p1, theta_p2, cp1, cp2, cs1, cs2, rho1, rho2):
     # Potential amplitude ratios from Eq. (6.164)
     At_Ai = -2 * ((m2 / delta1) + (m4 / delta2)) / delta
 
+    # Reflection coefficient:
+    Ar_Ai = ((l2/d1 + l4/d2)*(m1/d1 - m3/d2) - (l1/d1 - l3/d2)*(m2/d1 + m4/d2)) / delta
+
     # Convert to transmission coefficient:
     Tpp = At_Ai * rho2 / rho1 # Eq. 4.28
 
-    return Tpp # in theory Tps, Tsp and Tss is missing.
+    # Convert to reflection coefficient:
+    Rpp = Ar_Ai * rho1 / rho1 # Eq. 4.28 but for the same medium
+
+    return np.abs(Tpp), Rpp # in theory Tps, Tsp and Tss is missing.
 
 def fluid2solid_r_coeff(theta_p1, theta_p2, cp1, cp2, cs2, rho1, rho2):
     theta_p1 = abs(theta_p1)
@@ -174,3 +177,40 @@ def far_field_directivity_solid(theta, cl, cs, k, a):
     Dl = __far_field_directivity_solid(theta, cl, cs, k)
     Df = far_field_directivity(k, a, theta)
     return Df * Dl
+
+def compute_cl_water(temperature_celsius):
+    """
+    Based on
+    Lubbers, J., and R. Graaff. "A simple and accurate formula for the sound velocity in water."
+    Ultrasound in medicine & biology 24.7 (1998): 1065-1068.
+    """
+    return 1404.3 + 4.7 * temperature_celsius - 0.04 * temperature_celsius**2
+
+def compute_cl_aluminum(temperature_celsius):
+    """
+    Based on
+    Christman, Douglas R., et al. Measurements of Dynamic Properties of Materials. Volume 3.
+     6061-T6 Aluminum. No. MSL7023VOL3. 1971.    """
+    return 6387 - 0.00093 * temperature_celsius
+
+
+def compute_cl_steel(temperature_celsius, type="X14CrMoS17"):
+    """
+    Based on
+    Nowacki, K., and W. Kasprzyk. "The sound velocity in an alloy steel at high-temperature conditions."
+    International Journal of Thermophysics 31.1 (2010): 103-112.
+    """
+    match type:
+        case "X14CrMoS17":
+            A = -0.00065
+            B = -0.016
+            C = 6032
+        case "X90CrMoV18":
+            A = -0.00021
+            B = -0.73
+            C = 6230
+        case _:
+            raise ValueError("Invalid steel type.")
+    T = temperature_celsius - 273.15
+
+    return A * T**2 + B * T + C

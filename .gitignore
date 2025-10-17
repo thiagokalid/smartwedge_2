@@ -2,12 +2,16 @@
 __pycache__/
 *.py[cod]
 *$py.class
-/data
-/archive
+
+archive/*
+temp/relatorio/*
+figures/*
 # C extensions
 *.so
 *.zip
 archive/*
+*.npy
+temp/
 
 #
 data/*

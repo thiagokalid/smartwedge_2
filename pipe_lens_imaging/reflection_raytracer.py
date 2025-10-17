@@ -58,7 +58,7 @@ class ReflectionRayTracer(RayTracerSolver):
             # Extract the amplitudes:
             for rx in range(self.transducer.num_elem):
                 if self.transmission_loss:
-                    Tpp_12, _ = solid2fluid_t_coeff(
+                    Tpp_12 = solid2fluid_t_coeff(
                             solution[tx]['interface_12'][0][rx], solution[tx]['interface_12'][1][rx],
                             c1, c2, c1/2,
                             self.acoustic_lens.rho1, self.acoustic_lens.rho2

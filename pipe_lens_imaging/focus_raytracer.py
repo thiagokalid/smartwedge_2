@@ -16,6 +16,9 @@ class FocusRayTracer(RayTracerSolver):
         n_focii = len(solution[0]['xlens'])
 
         c1, c2, c3 = self.get_speeds()
+        # print(f"c1 = {c1:.2f}, c2 = {c2:.2f}, c3 = {c3:.2f}")
+        # print(f"acoustic_lens.c1 = {self.acoustic_lens.c1}")
+        # print(f"acoustic_lens.c2 = {self.acoustic_lens.c2}")
 
         coord_elements = np.array([self.transducer.xt, self.transducer.zt]).T
         coords_reflectors = np.array([solution[0]['xf'], solution[0]['zf']]).T
@@ -35,7 +38,7 @@ class FocusRayTracer(RayTracerSolver):
             coords_outer[j, 0, i], coords_outer[j, 1, i] = solution[j]['xpipe'][i], solution[j]['zpipe'][i]
 
             if self.transmission_loss:
-                Tpp_12, _ = solid2fluid_t_coeff(
+                Tpp_12 = solid2fluid_t_coeff(
                     solution[j]['interface_12'][0][i], solution[j]['interface_12'][1][i],
                     c1, c2, c1/2,
                     self.acoustic_lens.rho1, self.acoustic_lens.rho2

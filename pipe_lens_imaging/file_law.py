@@ -14,10 +14,9 @@ idx_retR = 7
 idx_ampR = 8
 
 
-def write(root, emission, reception=None, elem_range=None):
+def write(root, emission, reception=None, elem_range=None, delay_time_unit="us"):
     if root[-4:] != ".law":
         root += ".law"
-
 
     header = [
         "# LOIS DE RETARD \n",
@@ -36,8 +35,25 @@ def write(root, emission, reception=None, elem_range=None):
     if elem_range is None:
         elem_range = [0, emission.shape[1] - 1]
 
+    emission = np.copy(emission)
     if reception is None:
-        reception = emission
+        reception = np.zeros_like(emission)
+    else:
+        reception = np.copy(reception)
+
+    match delay_time_unit:
+        case "s":
+            emission *= 1e6
+            reception *= 1e6
+        case "ms":
+            emission *= 1e3
+            reception *= 1e3
+        case "us":
+            emission *= 1
+            reception *= 1
+        case _:
+            raise ValueError("Invalid time unit")
+
 
     with open(root, "w") as file:
         file.writelines(header)

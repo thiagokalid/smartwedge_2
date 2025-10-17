@@ -9,7 +9,7 @@ from itertools import product
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
-from pipe_lens_imaging.acoustic_lens_utils import convert_parameters
+from pipe_lens_imaging.utils import convert_parameters
 
 LAW_PATH = "../data/laws/"
 

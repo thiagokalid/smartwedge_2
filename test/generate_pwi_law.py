@@ -1,9 +1,8 @@
 import numpy as np
 import matplotlib
-from framework.post_proc import envelope, normalize
 from framework import file_m2k
 import matplotlib.pyplot as plt
-from file_law import file_law
+from pipe_lens_imaging import file_law
 from pipe_lens_imaging.pwi_tfm import compute_delaylaw_pwi
 matplotlib.use('TkAgg')
 
